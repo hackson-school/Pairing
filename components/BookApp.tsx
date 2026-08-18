@@ -120,9 +120,9 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
   }, []);
 
   const isMobile = windowSize.width < 768;
-  // PC・スマホともに中身が隙間なく美しく収まる黄金比率
-  const bookWidth = isMobile ? Math.min(windowSize.width - 16, 420) : 410;
-  const bookHeight = isMobile ? Math.min(windowSize.height - 20, 620) : 540;
+  // PC・スマホともに見切れず美しく収まるサイズ
+  const bookWidth = isMobile ? Math.min(windowSize.width - 16, 420) : 430;
+  const bookHeight = isMobile ? Math.min(windowSize.height - 20, 620) : Math.min(windowSize.height - 80, 590);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -559,37 +559,63 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                 </div>
               </div>
 
-              {/* ジャンル一覧（コンパクト化） */}
+              {/* ジャンル一覧（2列グリッドで劇的省スペース＆見切れ解消） */}
               <div className="space-y-1">
                 <span className="font-sans text-[7.5px] sm:text-[8.5px] font-bold text-[#8C532B] uppercase tracking-wider block">
                   飲み物のジャンル指定
                 </span>
                 <div className="space-y-1">
-                  {DRINK_GENRES.map((genre) => {
-                    const isSelected = selectedCategory === genre.id;
-                    return (
-                      <button
-                        key={genre.id}
-                        type="button"
-                        onClick={() => setSelectedCategory(genre.id)}
-                        className={`selectable-row w-full py-1.5 px-2.5 ${
-                          isSelected ? "selected" : ""
-                        }`}
-                      >
-                        <div className="text-left">
-                          <p className="font-sans text-[9.5px] sm:text-[11px] font-semibold leading-tight">{genre.title}</p>
-                          <p className="font-sans text-[7.5px] sm:text-[8.5px] text-[#948B82] leading-tight">{genre.subtitle}</p>
-                        </div>
-                        <div
-                          className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${
-                            isSelected ? "border-white bg-white text-charcoal-900" : "border-[#D3C9BD]"
+                  {/* おまかせ（全ジャンル） */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCategory("all")}
+                    className={`selectable-row w-full py-1.5 px-2.5 ${
+                      selectedCategory === "all" ? "selected" : ""
+                    }`}
+                  >
+                    <div className="text-left">
+                      <p className="font-sans text-[10px] sm:text-[11px] font-semibold leading-tight">おまかせ（全ジャンル）</p>
+                      <p className="font-sans text-[7.5px] sm:text-[8.5px] text-[#948B82] leading-tight">科学的相性が最も高い最高の一杯</p>
+                    </div>
+                    <div
+                      className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${
+                        selectedCategory === "all" ? "border-white bg-white text-charcoal-900" : "border-[#D3C9BD]"
+                      }`}
+                    >
+                      {selectedCategory === "all" && <Check className="w-2 h-2 stroke-[3]" />}
+                    </div>
+                  </button>
+
+                  {/* 4ジャンルの2列グリッド */}
+                  <div className="grid grid-cols-2 gap-1">
+                    {DRINK_GENRES.filter((g) => g.id !== "all").map((genre) => {
+                      const isSelected = selectedCategory === genre.id;
+                      return (
+                        <button
+                          key={genre.id}
+                          type="button"
+                          onClick={() => setSelectedCategory(genre.id)}
+                          className={`p-1.5 rounded-lg border text-left flex items-center justify-between transition-all ${
+                            isSelected
+                              ? "bg-[#1C1917] text-cream-50 border-[#1C1917]"
+                              : "bg-[#FAF8F4] border-[#E8E2D9] text-charcoal-700 hover:bg-[#F5F2EB]"
                           }`}
                         >
-                          {isSelected && <Check className="w-2 h-2 stroke-[3]" />}
-                        </div>
-                      </button>
-                    );
-                  })}
+                          <div className="min-w-0 pr-1">
+                            <p className="font-sans text-[9.5px] sm:text-[10.5px] font-semibold truncate leading-tight">{genre.title}</p>
+                            <p className="font-sans text-[7px] sm:text-[8px] opacity-75 truncate leading-tight">{genre.subtitle}</p>
+                          </div>
+                          <div
+                            className={`w-3 h-3 rounded-full border flex items-center justify-center shrink-0 ${
+                              isSelected ? "border-white bg-white text-charcoal-900" : "border-[#D3C9BD]"
+                            }`}
+                          >
+                            {isSelected && <Check className="w-1.5 h-1.5 stroke-[3]" />}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
