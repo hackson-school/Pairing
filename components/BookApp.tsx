@@ -124,12 +124,32 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
     }
   };
 
+  // 次のページへめくる（モバイル・PC対応）
   const handleFlipNext = () => {
-    bookRef.current?.pageFlip()?.flipNext();
+    try {
+      const pf = bookRef.current?.pageFlip();
+      if (!pf) return;
+      const current = pf.getCurrentPageIndex();
+      const next = isMobile ? current + 1 : current + 2;
+      pf.turnToPage(next);
+    } catch (e) {
+      console.error(e);
+      bookRef.current?.pageFlip()?.flipNext();
+    }
   };
 
+  // 前のページへめくる
   const handleFlipPrev = () => {
-    bookRef.current?.pageFlip()?.flipPrev();
+    try {
+      const pf = bookRef.current?.pageFlip();
+      if (!pf) return;
+      const current = pf.getCurrentPageIndex();
+      const prev = isMobile ? Math.max(0, current - 1) : Math.max(0, current - 2);
+      pf.turnToPage(prev);
+    } catch (e) {
+      console.error(e);
+      bookRef.current?.pageFlip()?.flipPrev();
+    }
   };
 
   const handleDiagnose = async () => {
@@ -147,7 +167,13 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
       setIsLoading(false);
 
       setTimeout(() => {
-        bookRef.current?.pageFlip()?.flipNext();
+        try {
+          const pf = bookRef.current?.pageFlip();
+          // 結果ページ（インデックス 4 または 5）へ直接めくる
+          pf?.turnToPage(4);
+        } catch (e) {
+          bookRef.current?.pageFlip()?.flipNext();
+        }
       }, 200);
     } catch (e) {
       console.error(e);
@@ -305,8 +331,15 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
             <div className="text-center pb-1 sm:pb-2">
               <button
                 type="button"
-                onClick={handleFlipNext}
-                className="btn-lift w-full py-3 rounded-xl font-sans font-medium text-xs text-[#1C1917] bg-[#FAF8F4] hover:bg-white shadow-[0_4px_15px_rgba(0,0,0,0.2)] flex items-center justify-center gap-2 tracking-wider uppercase md:hidden"
+                onClick={() => {
+                  try {
+                    const pf = bookRef.current?.pageFlip();
+                    pf?.turnToPage(1);
+                  } catch (e) {
+                    handleFlipNext();
+                  }
+                }}
+                className="btn-lift w-full py-3.5 rounded-xl font-sans font-medium text-xs text-[#1C1917] bg-[#FAF8F4] hover:bg-white shadow-[0_4px_15px_rgba(0,0,0,0.2)] flex items-center justify-center gap-2 tracking-wider uppercase md:hidden active:scale-95"
               >
                 <span>手帖を開く</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -353,8 +386,15 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
               <div className="pt-2">
                 <button
                   type="button"
-                  onClick={handleFlipNext}
-                  className="btn-lift w-full flex items-center justify-center gap-2 py-3 sm:py-3.5 rounded-xl font-sans font-medium text-xs text-cream-50 bg-[#1C1917] shadow-premium"
+                  onClick={() => {
+                    try {
+                      const pf = bookRef.current?.pageFlip();
+                      pf?.turnToPage(2);
+                    } catch (e) {
+                      handleFlipNext();
+                    }
+                  }}
+                  className="btn-lift w-full flex items-center justify-center gap-2 py-3 sm:py-3.5 rounded-xl font-sans font-medium text-xs text-cream-50 bg-[#1C1917] shadow-premium active:scale-95"
                 >
                   <span>手帖を開いてお菓子を選ぶ</span>
                   <ArrowRight className="w-3.5 h-3.5" />
