@@ -120,8 +120,9 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
   }, []);
 
   const isMobile = windowSize.width < 768;
-  const bookWidth = isMobile ? Math.min(windowSize.width - 16, 420) : 450;
-  const bookHeight = isMobile ? Math.min(windowSize.height - 20, 650) : 620;
+  // PC・スマホともに中身が隙間なく美しく収まる黄金比率
+  const bookWidth = isMobile ? Math.min(windowSize.width - 16, 420) : 410;
+  const bookHeight = isMobile ? Math.min(windowSize.height - 20, 620) : 540;
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
