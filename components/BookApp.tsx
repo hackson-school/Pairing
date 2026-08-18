@@ -2,28 +2,35 @@
 
 import React, { useRef, useState, useEffect, forwardRef } from "react";
 import HTMLFlipBook from "react-pageflip";
-import { Camera, X, ArrowRight, ArrowLeft, RotateCcw, Share2, Check, Bookmark, Coffee, Download, Sparkles } from "lucide-react";
-import { DrinkCategory, PairingResult } from "@/types/pairing";
+import { Camera, X, ArrowRight, ArrowLeft, RotateCcw, Share2, Check, Bookmark, Coffee, Download, Sparkles, Clock, Compass, BookOpen } from "lucide-react";
+import { DrinkCategory, MoodCategory, PairingResult } from "@/types/pairing";
 import { getPairingDiagnosis } from "@/lib/pairingService";
 import { toPng } from "html-to-image";
 
 const SWEETS_PRESETS = [
-  { name: "カヌレ", category: "焼き菓子", note: "焦がしカラメルとラム酒" },
-  { name: "ビターチョコレート", category: "ショコラ", note: "カカオ70%のほろ苦さ" },
-  { name: "バスクチーズケーキ", category: "ケーキ", note: "焦げ目と濃厚クリーム" },
-  { name: "苺のショートケーキ", category: "生ケーキ", note: "生クリームといちご" },
-  { name: "ポテトチップス", category: "スナック", note: "カリッとした塩気と油脂" },
-  { name: "練り羊羹", category: "和菓子", note: "小豆の上品な甘み" },
-  { name: "シュークリーム", category: "洋菓子", note: "濃厚カスタード" },
-  { name: "ピスタチオのマカロン", category: "洋菓子", note: "香ばしいナッツ風味" },
+  { name: "カヌレ", category: "焼き菓子", note: "焦がしカラメルとラム酒", texture: "外カリ中モチ" },
+  { name: "ビターチョコレート", category: "ショコラ", note: "カカオ70%のほろ苦さ", texture: "濃厚なくちどけ" },
+  { name: "バスクチーズケーキ", category: "ケーキ", note: "焦げ目と濃厚クリーム", texture: "クリーミー" },
+  { name: "苺のショートケーキ", category: "生ケーキ", note: "生クリームといちご", texture: "ふんわり軽快" },
+  { name: "ポテトチップス", category: "スナック", note: "カリッとした塩気と油脂", texture: "クリスピー" },
+  { name: "練り羊羹", category: "和菓子", note: "小豆の上品な甘み", texture: "滑らかで重厚" },
+  { name: "シュークリーム", category: "洋菓子", note: "濃厚カスタード", texture: "とろける甘み" },
+  { name: "ピスタチオのマカロン", category: "洋菓子", note: "香ばしいナッツ風味", texture: "サクふわ" },
 ];
 
 const DRINK_GENRES: { id: DrinkCategory; title: string; subtitle: string }[] = [
-  { id: "all", title: "おまかせ", subtitle: "全ジャンルから最高の一杯" },
-  { id: "coffee", title: "珈琲（コーヒー）", subtitle: "ドリップ・エスプレッソ" },
-  { id: "tea", title: "紅茶・ハーブティー", subtitle: "ストレート・ミルク" },
-  { id: "green_tea", title: "日本茶・中国茶", subtitle: "煎茶・ほうじ茶・烏龍茶" },
-  { id: "alcohol", title: "お酒（ワイン・洋酒等）", subtitle: "ワイン・ウイスキー・ビール" },
+  { id: "all", title: "おまかせ（全ジャンル）", subtitle: "科学的相性が最も高い最高の一杯" },
+  { id: "coffee", title: "珈琲（コーヒー）", subtitle: "ドリップ・エスプレッソ・ラテ" },
+  { id: "tea", title: "紅茶・ハーブティー", subtitle: "ストレート・アールグレイ・ミルク" },
+  { id: "green_tea", title: "日本茶・中国茶", subtitle: "深蒸し煎茶・ほうじ茶・烏龍茶" },
+  { id: "alcohol", title: "お酒（ワイン・洋酒等）", subtitle: "赤ワイン・ウイスキー・クラフトビール" },
+];
+
+const MOOD_OPTIONS: { id: MoodCategory; label: string; icon: string }[] = [
+  { id: "relax", label: "ほっと一息", icon: "☕" },
+  { id: "reward", label: "自分へのご褒美", icon: "✨" },
+  { id: "refresh", label: "気分転換", icon: "🍃" },
+  { id: "focus", label: "深い集中", icon: "📖" },
 ];
 
 // 本文ページコンポーネント
@@ -74,8 +81,8 @@ const BookPage = forwardRef<
             isCoverStyle ? "border-[#8C532B]/30 text-[#948B82]" : "border-[#E8E2D9]/70 text-[#948B82]"
           }`}
         >
-          <span className="tracking-widest uppercase text-[8px] sm:text-[9px]">Sweets & Drink Pairing</span>
-          <span className="font-display italic font-medium">{pageNumber}</span>
+          <span className="tracking-widest uppercase text-[8px] sm:text-[9px]">Sweets & Drink Pairing Journal</span>
+          <span className="font-display italic font-medium">Page {pageNumber}</span>
         </div>
       )}
     </div>
@@ -96,6 +103,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
   const [sweetsName, setSweetsName] = useState<string>("");
   const [image, setImage] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<DrinkCategory>("all");
+  const [selectedMood, setSelectedMood] = useState<MoodCategory>("relax");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [result, setResult] = useState<PairingResult | null>(null);
   const [isSharing, setIsSharing] = useState<boolean>(false);
@@ -112,9 +120,9 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
   }, []);
 
   const isMobile = windowSize.width < 768;
-  // スマホでコンテンツが上下ぴったり埋まる最適な縦横比
-  const bookWidth = isMobile ? Math.min(windowSize.width - 20, 390) : 450;
-  const bookHeight = isMobile ? Math.min(windowSize.height - 30, 530) : 620;
+  // スマホ画面を縦長にめいっぱい活用するサイズ（情報量増大に対応）
+  const bookWidth = isMobile ? Math.min(windowSize.width - 16, 420) : 450;
+  const bookHeight = isMobile ? Math.min(windowSize.height - 20, 650) : 620;
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -195,7 +203,6 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
     }
   };
 
-  // 画像生成とモーダル表示（スマホ・PC完全対応）
   const handleOpenImageSaveModal = async () => {
     if (!result || !shareCardRef.current || isSharing) return;
 
@@ -216,7 +223,6 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
     }
   };
 
-  // モーダル内からのWeb Share共有
   const handleShareFromModal = async () => {
     if (!generatedImageUrl || !result) return;
     try {
@@ -243,7 +249,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
     <div className="h-dvh w-full flex flex-col items-center justify-center p-2 sm:p-8 select-none bg-[#F0EEE9] overflow-hidden">
       <input type="file" ref={fileInputRef} onChange={handleFileSelect} accept="image/*" className="hidden" />
 
-      {/* ヘッダー（PCのみ表示・スマホでは省いてスクロール不要にする） */}
+      {/* ヘッダー（PCのみ表示） */}
       <div className="text-center mb-4 px-2 hidden md:block">
         <span className="font-sans text-[10px] font-semibold text-charcoal-400 uppercase tracking-widest block mb-1">
           Interactive Pairing Book
@@ -271,11 +277,11 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
           minWidth={280}
           maxWidth={470}
           minHeight={450}
-          maxHeight={640}
+          maxHeight={680}
           maxShadowOpacity={0.4}
           showCover={false}
           mobileScrollSupport={true}
-          className="shadow-[0_20px_50px_-15px_rgba(0,0,0,0.2)] rounded-2xl overflow-hidden"
+          className="shadow-[0_20px_50px_-15px_rgba(0,0,0,0.25)] rounded-2xl overflow-hidden"
           style={{}}
           startPage={0}
           drawShadow={true}
@@ -293,45 +299,60 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
               見開き 1：【Page 1】扉絵・表紙
           ========================================================= */}
           <BookPage pageNumber={1} side="left" isCoverStyle={true}>
-            <div className="space-y-3 sm:space-y-6 pt-2 sm:pt-4 text-center">
-              <span className="font-sans text-[8px] sm:text-[10px] tracking-[0.25em] text-[#C4BEB5] uppercase block">
-                Grind & Confectionery
-              </span>
-              <h2 className="font-display font-light italic text-xl sm:text-3xl text-[#FDFCFB] tracking-tight leading-tight">
-                お菓子と飲み物の手帖
-              </h2>
-              <div className="w-8 sm:w-10 h-px bg-[#8C532B] mx-auto" />
-              <p className="font-sans text-[10px] sm:text-xs text-[#948B82] leading-relaxed max-w-xs mx-auto">
-                日常のひとくちを、至福のひとときに変える<br />
-                フレーバーペアリングの記録
-              </p>
-            </div>
-
-            <div className="my-auto flex justify-center py-3 sm:py-6">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border border-[#8C532B]/50 flex items-center justify-center text-[#E4CFBC] shadow-inner">
-                <Bookmark className="w-5 h-5 sm:w-7 sm:h-7 stroke-[1.2]" />
+            <div className="h-full flex flex-col justify-between text-center py-1">
+              <div className="space-y-2">
+                <span className="font-sans text-[8px] sm:text-[10px] tracking-[0.25em] text-[#C4BEB5] uppercase block">
+                  Flavor Pairing Journal · Vol. 1
+                </span>
+                <h2 className="font-display font-light italic text-xl sm:text-3xl text-[#FDFCFB] tracking-tight leading-tight">
+                  お菓子と飲み物の手帖
+                </h2>
+                <div className="w-8 sm:w-10 h-px bg-[#8C532B] mx-auto my-2" />
+                <p className="font-sans text-[10px] sm:text-xs text-[#948B82] leading-relaxed max-w-xs mx-auto">
+                  日常のひとくちを、至福のひとときに変える<br />
+                  感性と科学が織りなすペアリングの記録
+                </p>
               </div>
-            </div>
 
-            <div className="text-center pb-1">
-              <button
-                type="button"
-                onClick={() => {
-                  try {
-                    const pf = bookRef.current?.pageFlip();
-                    pf?.turnToPage(1);
-                  } catch (e) {
-                    handleFlipNext();
-                  }
-                }}
-                className="btn-lift w-full py-3 rounded-xl font-sans font-medium text-xs text-[#1C1917] bg-[#FAF8F4] hover:bg-white shadow-[0_4px_15px_rgba(0,0,0,0.2)] flex items-center justify-center gap-2 tracking-wider uppercase md:hidden active:scale-95"
-              >
-                <span>手帖を開く</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-              <p className="font-sans text-[11px] text-[#C4BEB5] hidden md:block">
-                右のページでお菓子を記してください 👉
-              </p>
+              <div className="my-auto flex flex-col items-center justify-center py-2 space-y-2">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-[#8C532B]/50 flex items-center justify-center text-[#E4CFBC] shadow-inner bg-[#1A1715]/60">
+                  <Bookmark className="w-6 h-6 sm:w-7 sm:h-7 stroke-[1.2]" />
+                </div>
+                <span className="text-[8.5px] text-[#C4BEB5] tracking-widest uppercase">
+                  Edition 2026 · Sensory Archive
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                <div className="p-2.5 rounded-xl bg-[#1F1B18] border border-[#3D3732] text-left text-[9.5px] text-[#948B82] space-y-1">
+                  <div className="flex items-center gap-1.5 text-[#E4CFBC]">
+                    <Sparkles className="w-3 h-3" />
+                    <span className="font-semibold text-[10px]">手帖の役割</span>
+                  </div>
+                  <p className="leading-relaxed">
+                    お菓子の甘み・油脂・香りを分析し、最も引き立て合う至極の一杯を処方します。
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    try {
+                      const pf = bookRef.current?.pageFlip();
+                      pf?.turnToPage(1);
+                    } catch (e) {
+                      handleFlipNext();
+                    }
+                  }}
+                  className="btn-lift w-full py-3 rounded-xl font-sans font-medium text-xs text-[#1C1917] bg-[#FAF8F4] hover:bg-white shadow-[0_4px_15px_rgba(0,0,0,0.2)] flex items-center justify-center gap-2 tracking-wider uppercase md:hidden active:scale-95"
+                >
+                  <span>手帖を開く</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+                <p className="font-sans text-[11px] text-[#C4BEB5] hidden md:block">
+                  右のページでお菓子を記してください 👉
+                </p>
+              </div>
             </div>
           </BookPage>
 
@@ -339,29 +360,29 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
               見開き 1：【Page 2】イントロダクション ＆ 次へ進む
           ========================================================= */}
           <BookPage pageNumber={2} side="right">
-            <div className="h-full flex flex-col justify-between space-y-3">
-              <div className="space-y-2">
+            <div className="h-full flex flex-col justify-between space-y-2.5">
+              <div>
                 <span className="font-sans text-[8px] sm:text-[10px] font-semibold text-charcoal-400 uppercase tracking-widest block mb-0.5">
-                  Introduction
+                  Introduction & Science
                 </span>
                 <h3 className="font-display font-light text-lg sm:text-2xl text-charcoal-900 leading-tight">
                   ペアリングの愉しみ
                 </h3>
-                <p className="text-[10.5px] sm:text-xs text-charcoal-600 leading-relaxed font-sans">
+                <p className="text-[10px] sm:text-xs text-charcoal-600 leading-relaxed font-sans mt-1">
                   甘み、苦味、酸味、そして香り。<br />
-                  お菓子と飲み物が重なり合うとき、それぞれの美味しさは何倍にも引き立ちます。
+                  二つが重なり合うとき、それぞれの美味しさは何倍にも引き立ちます。
                 </p>
               </div>
 
-              {/* 3大原則のミニカード */}
-              <div className="space-y-1.5">
+              {/* ペアリングの三原則 */}
+              <div className="space-y-1">
                 <span className="font-sans text-[8px] sm:text-[9px] font-bold text-[#8C532B] uppercase tracking-wider block">
                   ペアリングの三原則
                 </span>
                 <div className="p-2 sm:p-2.5 rounded-xl bg-[#F5F2EB] border border-[#E8E2D9] text-[10px] sm:text-[11px] text-charcoal-700 space-y-1">
                   <div className="flex items-start gap-1.5">
                     <span className="font-bold text-[#8C532B]">Ⅰ.</span>
-                    <span><strong>風味の同調</strong>：似た香りや甘みを重ねて深みを引き出す</span>
+                    <span><strong>風味の同調</strong>：似た香りやコクを重ねて深みを倍増</span>
                   </div>
                   <div className="flex items-start gap-1.5">
                     <span className="font-bold text-[#8C532B]">Ⅱ.</span>
@@ -369,12 +390,23 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                   </div>
                   <div className="flex items-start gap-1.5">
                     <span className="font-bold text-[#8C532B]">Ⅲ.</span>
-                    <span><strong>余韻の調和</strong>：喉を通ったあとに広がる心地よい香り</span>
+                    <span><strong>余韻の調和</strong>：喉を通ったあとに広がる心地よいアロマ</span>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-1">
+              {/* 五味構造のミニガイド */}
+              <div className="p-2 sm:p-2.5 rounded-xl bg-[#FAF5F0] border border-[#E4CFBC] text-[9.5px] sm:text-[10.5px] text-charcoal-700 space-y-1">
+                <div className="flex items-center gap-1 text-[#8C532B]">
+                  <Compass className="w-3 h-3" />
+                  <span className="font-bold uppercase tracking-wider text-[8.5px]">味覚のマリアージュ構造</span>
+                </div>
+                <p className="leading-relaxed text-charcoal-600">
+                  お菓子の油脂分を飲み物のタンニンや温かさが包み込み、口内をリセットする科学的な心地よさを設計します。
+                </p>
+              </div>
+
+              <div className="pt-0.5">
                 <button
                   type="button"
                   onClick={() => {
@@ -398,16 +430,16 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
               見開き 2：【Page 3】Chapter I お菓子を選ぶ
           ========================================================= */}
           <BookPage pageNumber={3} side="left">
-            <div className="h-full flex flex-col justify-between space-y-2.5">
+            <div className="h-full flex flex-col justify-between space-y-2">
               <div>
                 <span className="font-sans text-[8px] sm:text-[10px] font-semibold text-charcoal-400 uppercase tracking-widest block mb-0.5">
-                  Chapter I
+                  Chapter I · Confectionery
                 </span>
                 <h2 className="font-display font-light text-base sm:text-xl text-charcoal-900 leading-tight">
                   今日のお菓子を記す
                 </h2>
                 <p className="font-sans text-[9px] sm:text-[11px] text-charcoal-400">
-                  写真を貼るか、目録から選んでください
+                  写真・定番目録・手入力から選んでください
                 </p>
               </div>
 
@@ -415,7 +447,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
               {image ? (
                 <div className="relative rounded-xl overflow-hidden p-1.5 flex items-center justify-center bg-[#F5F2EB] border border-[#E8E2D9]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={image} alt="プレビュー" className="max-h-16 sm:max-h-24 w-auto rounded-lg object-contain" />
+                  <img src={image} alt="プレビュー" className="max-h-16 sm:max-h-20 w-auto rounded-lg object-contain" />
                   <button
                     type="button"
                     onClick={() => setImage(null)}
@@ -427,17 +459,17 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
               ) : (
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="rounded-xl p-2 sm:p-2.5 flex flex-col items-center justify-center gap-0.5 cursor-pointer border border-dashed border-[#D3C9BD] hover:border-[#948B82] bg-[#FAF8F4] hover:bg-[#F5F2EB] transition-all"
+                  className="rounded-xl p-2 flex flex-col items-center justify-center gap-0.5 cursor-pointer border border-dashed border-[#D3C9BD] hover:border-[#948B82] bg-[#FAF8F4] hover:bg-[#F5F2EB] transition-all"
                 >
                   <Camera className="w-3.5 h-3.5 text-charcoal-400" />
-                  <p className="font-sans text-[9px] sm:text-[11px] font-medium text-charcoal-800">お菓子の写真を貼る</p>
+                  <p className="font-sans text-[9px] sm:text-[10.5px] font-medium text-charcoal-800">お菓子の写真を貼る（カメラ／アルバム）</p>
                 </div>
               )}
 
               {/* 定番お菓子目録（8種全表示） */}
               <div className="space-y-1">
                 <span className="font-sans text-[8px] sm:text-[9px] font-semibold text-charcoal-400 uppercase tracking-wider block">
-                  定番の目録
+                  定番の目録から選ぶ
                 </span>
                 <div className="grid grid-cols-2 gap-1 sm:gap-1.5">
                   {SWEETS_PRESETS.map((item) => {
@@ -453,8 +485,11 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                             : "bg-[#FAF8F4] hover:bg-[#F5F2EB] text-[#1C1917] border border-[#E8E2D9]"
                         }`}
                       >
-                        <span className="text-[7px] sm:text-[8px] text-[#948B82] block">{item.category}</span>
-                        <p className="font-semibold text-[9px] sm:text-[11px] truncate">{item.name}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[7.5px] text-[#948B82] block">{item.category}</span>
+                          <span className="text-[7px] text-[#8C532B] opacity-80">{item.texture}</span>
+                        </div>
+                        <p className="font-semibold text-[9.5px] sm:text-[11px] truncate mt-0.5">{item.name}</p>
                       </button>
                     );
                   })}
@@ -467,8 +502,8 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                   type="text"
                   value={sweetsName}
                   onChange={(e) => setSweetsName(e.target.value)}
-                  placeholder="または自由にお菓子名を入力..."
-                  className="input-editorial text-[11px] sm:text-xs py-1.5 sm:py-2"
+                  placeholder="または自由にお菓子名を入力（例: モンブラン）..."
+                  className="input-editorial text-[10.5px] sm:text-xs py-1.5 sm:py-2"
                 />
               </div>
 
@@ -477,7 +512,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                 <button
                   type="button"
                   onClick={handleFlipNext}
-                  className="btn-lift w-full py-2.5 rounded-xl font-sans font-medium text-xs text-cream-50 bg-[#1C1917] shadow-premium flex items-center justify-center gap-1.5"
+                  className="btn-lift w-full py-2.5 rounded-xl font-sans font-medium text-xs text-cream-50 bg-[#1C1917] shadow-premium flex items-center justify-center gap-1.5 active:scale-95"
                 >
                   <span>次へ：飲み物を選ぶ</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -490,10 +525,10 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
               見開き 2：【Page 4】Chapter II 飲み物の気分を選ぶ
           ========================================================= */}
           <BookPage pageNumber={4} side="right">
-            <div className="h-full flex flex-col justify-between space-y-2.5">
+            <div className="h-full flex flex-col justify-between space-y-2">
               <div>
                 <span className="font-sans text-[8px] sm:text-[10px] font-semibold text-charcoal-400 uppercase tracking-widest block mb-0.5">
-                  Chapter II
+                  Chapter II · Beverage & Mood
                 </span>
                 <h2 className="font-display font-light text-base sm:text-xl text-charcoal-900 leading-tight">
                   合わせたい一杯
@@ -503,41 +538,73 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                 </p>
               </div>
 
-              {/* ジャンル一覧 */}
-              <div className="space-y-1.5 sm:space-y-2 flex-1 flex flex-col justify-center">
-                {DRINK_GENRES.map((genre) => {
-                  const isSelected = selectedCategory === genre.id;
-                  return (
-                    <button
-                      key={genre.id}
-                      type="button"
-                      onClick={() => setSelectedCategory(genre.id)}
-                      className={`selectable-row w-full py-2 sm:py-2.5 px-3 ${
-                        isSelected ? "selected" : ""
-                      }`}
-                    >
-                      <div className="text-left">
-                        <p className="font-sans text-[10.5px] sm:text-xs font-semibold">{genre.title}</p>
-                        <p className="font-sans text-[8.5px] sm:text-[10px] text-[#948B82]">{genre.subtitle}</p>
-                      </div>
-                      <div
-                        className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border flex items-center justify-center ${
-                          isSelected ? "border-white bg-white text-charcoal-900" : "border-[#D3C9BD]"
+              {/* 気分シチュエーション選択 */}
+              <div className="space-y-1">
+                <span className="font-sans text-[8px] sm:text-[9px] font-bold text-[#8C532B] uppercase tracking-wider block">
+                  今の気分・シチュエーション
+                </span>
+                <div className="grid grid-cols-2 gap-1">
+                  {MOOD_OPTIONS.map((mood) => {
+                    const isSelected = selectedMood === mood.id;
+                    return (
+                      <button
+                        key={mood.id}
+                        type="button"
+                        onClick={() => setSelectedMood(mood.id)}
+                        className={`p-1.5 rounded-lg border text-left text-[9.5px] sm:text-[10.5px] flex items-center gap-1.5 transition-all ${
+                          isSelected
+                            ? "bg-[#1C1917] text-cream-50 border-[#1C1917]"
+                            : "bg-[#FAF8F4] border-[#E8E2D9] text-charcoal-700 hover:bg-[#F5F2EB]"
                         }`}
                       >
-                        {isSelected && <Check className="w-2 sm:w-2.5 h-2 sm:h-2.5 stroke-[3]" />}
-                      </div>
-                    </button>
-                  );
-                })}
+                        <span>{mood.icon}</span>
+                        <span className="font-medium">{mood.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ジャンル一覧 */}
+              <div className="space-y-1">
+                <span className="font-sans text-[8px] sm:text-[9px] font-bold text-[#8C532B] uppercase tracking-wider block">
+                  飲み物のジャンル指定
+                </span>
+                <div className="space-y-1">
+                  {DRINK_GENRES.map((genre) => {
+                    const isSelected = selectedCategory === genre.id;
+                    return (
+                      <button
+                        key={genre.id}
+                        type="button"
+                        onClick={() => setSelectedCategory(genre.id)}
+                        className={`selectable-row w-full py-1.5 sm:py-2 px-2.5 ${
+                          isSelected ? "selected" : ""
+                        }`}
+                      >
+                        <div className="text-left">
+                          <p className="font-sans text-[10px] sm:text-[11.5px] font-semibold">{genre.title}</p>
+                          <p className="font-sans text-[8px] sm:text-[9.5px] text-[#948B82]">{genre.subtitle}</p>
+                        </div>
+                        <div
+                          className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${
+                            isSelected ? "border-white bg-white text-charcoal-900" : "border-[#D3C9BD]"
+                          }`}
+                        >
+                          {isSelected && <Check className="w-2 h-2 stroke-[3]" />}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* 鑑定ボタン */}
-              <div className="pt-1 flex gap-1.5 sm:gap-2">
+              <div className="pt-0.5 flex gap-1.5 sm:gap-2">
                 <button
                   type="button"
                   onClick={handleFlipPrev}
-                  className="btn-lift flex items-center justify-center gap-1 px-3 sm:px-4 py-2.5 sm:py-3.5 rounded-xl font-sans font-medium text-xs border border-cream-300 bg-[#FAF8F4] text-charcoal-600"
+                  className="btn-lift flex items-center justify-center gap-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl font-sans font-medium text-xs border border-cream-300 bg-[#FAF8F4] text-charcoal-600"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   戻る
@@ -547,12 +614,12 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                   type="button"
                   onClick={handleDiagnose}
                   disabled={isLoading}
-                  className="btn-lift flex-1 flex items-center justify-center gap-1.5 py-2.5 sm:py-3.5 rounded-xl font-sans font-medium text-xs text-cream-50 bg-[#1C1917] shadow-premium disabled:opacity-85 transition-all active:scale-95"
+                  className="btn-lift flex-1 flex items-center justify-center gap-1.5 py-2.5 sm:py-3 rounded-xl font-sans font-medium text-xs text-cream-50 bg-[#1C1917] shadow-premium disabled:opacity-85 transition-all active:scale-95"
                 >
                   {isLoading ? (
                     <div className="flex items-center gap-1.5">
                       <div className="w-3.5 h-3.5 border-2 border-cream-100/40 border-t-cream-100 rounded-full animate-spin" />
-                      <span>鑑定中...</span>
+                      <span>相性を科学鑑定中...</span>
                     </div>
                   ) : (
                     <>
@@ -571,17 +638,17 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
           <BookPage pageNumber={5} side="left">
             {result ? (
               <div className="h-full flex flex-col justify-between space-y-2">
-                <div className="flex items-start justify-between pb-1.5 sm:pb-3 border-b border-[#E8E2D9]">
+                <div className="flex items-start justify-between pb-1.5 border-b border-[#E8E2D9]">
                   <div>
                     <span className="font-sans text-[8px] sm:text-[9px] font-semibold text-charcoal-400 uppercase tracking-widest block">
-                      {result.sweets.category}
+                      {result.sweets.category} · Analysis
                     </span>
                     <h3 className="font-display font-light italic text-base sm:text-xl text-charcoal-900 mt-0.5">
                       {result.sweets.name}
                     </h3>
                   </div>
                   <div className="text-right">
-                    <span className="font-sans text-[8px] sm:text-[9px] text-charcoal-400 uppercase block">相性スコア</span>
+                    <span className="font-sans text-[7.5px] sm:text-[8.5px] text-charcoal-400 uppercase block">相性スコア</span>
                     <div className="flex items-baseline justify-end gap-0.5">
                       <span className="font-display font-bold text-2xl sm:text-3xl text-[#8C532B]">
                         {result.bestMatch.matchScore}
@@ -591,28 +658,28 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                   </div>
                 </div>
 
-                <div className="p-3 sm:p-4 rounded-xl bg-[#FAF5F0] border border-[#E4CFBC] space-y-0.5">
-                  <span className="font-sans text-[8px] sm:text-[9px] font-bold text-[#8C532B] uppercase tracking-wider block">
+                <div className="p-2.5 sm:p-3.5 rounded-xl bg-[#FAF5F0] border border-[#E4CFBC] space-y-0.5">
+                  <span className="font-sans text-[7.5px] sm:text-[8.5px] font-bold text-[#8C532B] uppercase tracking-wider block">
                     Best Match · {result.bestMatch.categoryLabel}
                   </span>
-                  <h4 className="font-display font-semibold text-sm sm:text-xl text-charcoal-900">
+                  <h4 className="font-display font-semibold text-sm sm:text-lg text-charcoal-900">
                     {result.bestMatch.drinkName}
                   </h4>
-                  <p className="font-sans text-[10.5px] sm:text-xs text-charcoal-600 leading-relaxed pt-0.5">
+                  <p className="font-sans text-[10px] sm:text-xs text-charcoal-600 leading-relaxed pt-0.5">
                     「{result.bestMatch.catchphrase}」
                   </p>
                 </div>
 
                 <div className="p-2.5 rounded-xl bg-[#F5F2EB] text-xs space-y-1.5 border border-[#E8E2D9]">
                   <div>
-                    <span className="font-semibold text-charcoal-800 block text-[8.5px] sm:text-[10px] mb-0.5">【香りと風味の同調】</span>
-                    <p className="text-charcoal-600 text-[9.5px] sm:text-[11px] leading-relaxed">
+                    <span className="font-semibold text-charcoal-800 block text-[8px] sm:text-[9.5px] mb-0.5">【香りと風味の同調】</span>
+                    <p className="text-charcoal-600 text-[9px] sm:text-[10.5px] leading-relaxed">
                       {result.bestMatch.flavorSynergy.harmonyReason}
                     </p>
                   </div>
                   <div className="pt-1.5 border-t border-[#E8E2D9]">
-                    <span className="font-semibold text-charcoal-800 block text-[8.5px] sm:text-[10px] mb-0.5">【味覚の相乗効果】</span>
-                    <p className="text-charcoal-600 text-[9.5px] sm:text-[11px] leading-relaxed">
+                    <span className="font-semibold text-charcoal-800 block text-[8px] sm:text-[9.5px] mb-0.5">【味覚の相乗効果（科学的根拠）】</span>
+                    <p className="text-charcoal-600 text-[9px] sm:text-[10.5px] leading-relaxed">
                       {result.bestMatch.flavorSynergy.scienceNotes}
                     </p>
                   </div>
@@ -645,51 +712,62 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
           ========================================================= */}
           <BookPage pageNumber={6} side="right">
             {result ? (
-              <div className="h-full flex flex-col justify-between space-y-2.5">
+              <div className="h-full flex flex-col justify-between space-y-2">
                 <div>
                   <span className="font-sans text-[8px] sm:text-[10px] font-semibold text-charcoal-400 uppercase tracking-widest block mb-0.5">
-                    Serving & Alternatives
+                    Chapter IV · Serving & Alternatives
                   </span>
                   <h3 className="font-display font-light text-base sm:text-lg text-charcoal-900">
                     嗜み方と他の候補
                   </h3>
                 </div>
 
-                <div className="grid grid-cols-2 gap-1.5 sm:gap-2 text-xs">
+                {/* 4グリッド サービングガイド */}
+                <div className="grid grid-cols-2 gap-1 sm:gap-1.5 text-xs">
                   <div className="p-2 rounded-xl bg-[#FAF8F4] border border-[#E8E2D9]">
-                    <span className="text-[7.5px] sm:text-[9px] text-[#948B82] block">おすすめ温度</span>
-                    <span className="font-medium text-charcoal-800 text-[9.5px] sm:text-[11px]">{result.bestMatch.servingGuide.temperature}</span>
+                    <span className="text-[7.5px] sm:text-[8.5px] text-[#948B82] block">おすすめ温度</span>
+                    <span className="font-medium text-charcoal-800 text-[9.5px] sm:text-[10.5px]">{result.bestMatch.servingGuide.temperature}</span>
                   </div>
                   <div className="p-2 rounded-xl bg-[#FAF8F4] border border-[#E8E2D9]">
-                    <span className="text-[7.5px] sm:text-[9px] text-[#948B82] block">淹れ方・濃さ</span>
-                    <span className="font-medium text-charcoal-800 text-[9.5px] sm:text-[11px]">{result.bestMatch.servingGuide.strengthOrBrew}</span>
+                    <span className="text-[7.5px] sm:text-[8.5px] text-[#948B82] block">淹れ方・濃さ</span>
+                    <span className="font-medium text-charcoal-800 text-[9.5px] sm:text-[10.5px]">{result.bestMatch.servingGuide.strengthOrBrew}</span>
                   </div>
                   <div className="p-2 rounded-xl bg-[#FAF8F4] border border-[#E8E2D9]">
-                    <span className="text-[7.5px] sm:text-[9px] text-[#948B82] block">器</span>
-                    <span className="font-medium text-charcoal-800 text-[9.5px] sm:text-[11px]">{result.bestMatch.servingGuide.recommendedVessel}</span>
+                    <span className="text-[7.5px] sm:text-[8.5px] text-[#948B82] block">器・グラス</span>
+                    <span className="font-medium text-charcoal-800 text-[9.5px] sm:text-[10.5px]">{result.bestMatch.servingGuide.recommendedVessel}</span>
                   </div>
                   <div className="p-2 rounded-xl bg-[#FAF8F4] border border-[#E8E2D9]">
-                    <span className="text-[7.5px] sm:text-[9px] text-[#948B82] block">ワンポイント</span>
-                    <span className="font-medium text-charcoal-800 text-[9.5px] sm:text-[11px] line-clamp-1">{result.bestMatch.servingGuide.specialTip}</span>
+                    <span className="text-[7.5px] sm:text-[8.5px] text-[#948B82] block">プロの一言</span>
+                    <span className="font-medium text-charcoal-800 text-[9.5px] sm:text-[10.5px] line-clamp-1">{result.bestMatch.servingGuide.specialTip}</span>
                   </div>
                 </div>
 
+                {/* おすすめのシチュエーション・時間帯 */}
+                <div className="p-2 rounded-xl bg-[#FAF5F0] border border-[#E4CFBC] text-[9px] sm:text-[10px] text-charcoal-700 flex items-center gap-2">
+                  <Clock className="w-3.5 h-3.5 text-[#8C532B] shrink-0" />
+                  <div>
+                    <span className="font-bold text-[#8C532B] block text-[8px] uppercase">おすすめのシーン</span>
+                    <span className="text-charcoal-600">午後3時のティーブレイク、または静かな夜のひとときに。</span>
+                  </div>
+                </div>
+
+                {/* 他の組み合わせ */}
                 {result.alternativePairings && result.alternativePairings.length > 0 && (
                   <div className="space-y-1">
-                    <span className="font-sans text-[7.5px] sm:text-[9px] font-semibold text-charcoal-400 uppercase tracking-wider block">
-                      他の組み合わせ
+                    <span className="font-sans text-[7.5px] sm:text-[8.5px] font-semibold text-charcoal-400 uppercase tracking-wider block">
+                      他の候補・別の表情
                     </span>
                     <div className="space-y-1">
                       {result.alternativePairings.slice(0, 2).map((alt, i) => (
                         <div
                           key={i}
-                          className="flex items-center justify-between p-1.5 sm:p-2 rounded-xl bg-[#FAF8F4] border border-[#E8E2D9] text-xs"
+                          className="flex items-center justify-between p-1.5 rounded-xl bg-[#FAF8F4] border border-[#E8E2D9] text-xs"
                         >
                           <div className="flex items-center gap-1">
                             <span className="text-[7.5px] sm:text-[8px] px-1 py-0.5 rounded bg-[#F5F2EB] text-[#736B63]">
                               {alt.categoryLabel}
                             </span>
-                            <span className="font-medium text-charcoal-800 text-[9.5px] sm:text-[11px]">{alt.drinkName}</span>
+                            <span className="font-medium text-charcoal-800 text-[9px] sm:text-[10.5px]">{alt.drinkName}</span>
                           </div>
                           <span className="font-display font-bold text-[#8C532B] text-xs">{alt.matchScore}%</span>
                         </div>
@@ -698,7 +776,8 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                   </div>
                 )}
 
-                <div className="flex gap-1.5 pt-1">
+                {/* 下部アクションボタン */}
+                <div className="flex gap-1.5 pt-0.5">
                   <button
                     type="button"
                     onClick={handleOpenImageSaveModal}
