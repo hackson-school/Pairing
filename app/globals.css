@@ -1,0 +1,293 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ====================================================
+   2026 Design System — Warm Editorial
+   リサーチ出典: Awwwards SOTY 2025, Fraunces + DM Sans
+   ==================================================== */
+
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+
+:root {
+  /* Colors */
+  --color-bg:      #F0EEE9;
+  --color-surface: #FAF8F4;
+  --color-border:  #E8E2D9;
+  --color-text:    #1C1917;
+  --color-muted:   #5A534C;
+  --color-accent:  #A47764;
+
+  /* Radius system */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 150ms;
+  --dur-base: 200ms;
+  --dur-slow: 350ms;
+}
+
+/* Base Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Noto Sans JP', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* ====================================================
+   ノイズテクスチャ
+   ==================================================== */
+.noise-surface {
+  position: relative;
+  isolation: isolate;
+}
+.noise-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 0;
+}
+.noise-surface > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ====================================================
+   カード — Premium Shadow System（2シャドウ）
+   ==================================================== */
+.card-premium {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  transition:
+    box-shadow var(--dur-base) ease-out,
+    transform var(--dur-base) ease-out;
+}
+.card-premium:hover {
+  box-shadow: 0 10px 20px rgba(0,0,0,0.07), 0 4px 6px rgba(0,0,0,0.04);
+  transform: translateY(-2px);
+}
+.card-premium:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+}
+
+/* ====================================================
+   Micro-Lift ボタン（非対称トランジション）
+   ==================================================== */
+.btn-lift {
+  transition:
+    background-color var(--dur-fast) ease-out,
+    box-shadow var(--dur-base) ease-out,
+    transform var(--dur-base) var(--ease-out);
+}
+.btn-lift:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06);
+}
+.btn-lift:active {
+  transform: translateY(1px);
+  box-shadow: none;
+  transition-duration: var(--dur-fast);
+}
+
+/* ====================================================
+   Typography — Fraunces Display
+   ==================================================== */
+.font-display {
+  font-family: 'Fraunces', Georgia, serif;
+}
+
+/* エディトリアルコントラスト: italic + light weight */
+.editorial-heading {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 300;
+  font-style: italic;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+/* Fluid typography */
+.text-hero {
+  font-size: clamp(2.25rem, 6vw, 4.5rem);
+}
+.text-display {
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+/* ====================================================
+   セレクタブルアイテム（マガジンロウ風）
+   ==================================================== */
+.selectable-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-base) ease-out,
+    border-color var(--dur-base) ease-out,
+    transform var(--dur-base) var(--ease-out);
+}
+.selectable-row:hover {
+  background: #F2EDE3;
+  border-color: #C8BFB4;
+}
+.selectable-row.selected {
+  background: #1C1917;
+  border-color: #1C1917;
+  color: #FAF8F4;
+}
+.selectable-row:active {
+  transform: scale(0.99);
+}
+
+/* ====================================================
+   フォームインプット
+   ==================================================== */
+.input-editorial {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  color: var(--color-text);
+  outline: none;
+  transition:
+    border-color var(--dur-base) ease-out,
+    box-shadow var(--dur-base) ease-out,
+    background-color var(--dur-base) ease-out;
+}
+.input-editorial::placeholder {
+  color: #948B82;
+}
+.input-editorial:focus {
+  border-color: #1C1917;
+  background: #FDFCFB;
+  box-shadow: 0 0 0 3px rgba(28,25,23,0.06);
+}
+
+/* ====================================================
+   ローディングスピナー
+   ==================================================== */
+@keyframes spin-smooth {
+  to { transform: rotate(360deg); }
+}
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-text);
+  border-radius: 50%;
+  animation: spin-smooth 0.7s linear infinite;
+}
+
+/* ====================================================
+   スコアバー（結果画面）
+   ==================================================== */
+.score-bar-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-border);
+  overflow: hidden;
+}
+.score-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #A47764, #8C532B);
+  transition: width 800ms var(--ease-out);
+}
+
+/* ====================================================
+   3D 本のパラパラめくり（Page Riffling）アニメーション
+   ==================================================== */
+.book-3d-stage {
+  perspective: 2200px;
+  transform-style: preserve-3d;
+}
+
+@keyframes riffle-page-1 {
+  0%   { transform: rotateY(0deg); }
+  100% { transform: rotateY(-180deg); }
+}
+@keyframes riffle-page-2 {
+  0%   { transform: rotateY(0deg); }
+  100% { transform: rotateY(-180deg); }
+}
+@keyframes riffle-page-3 {
+  0%   { transform: rotateY(0deg); }
+  100% { transform: rotateY(-180deg); }
+}
+@keyframes riffle-page-4 {
+  0%   { transform: rotateY(0deg); }
+  100% { transform: rotateY(-180deg); }
+}
+
+.riffle-leaf {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50%;
+  height: 100%;
+  transform-origin: left center;
+  backface-visibility: hidden;
+  box-shadow: -10px 0 30px rgba(0,0,0,0.15);
+}
+
+.riffle-1 { animation: riffle-page-1 0.7s cubic-bezier(0.25, 1, 0.5, 1) 0.05s forwards; }
+.riffle-2 { animation: riffle-page-2 0.7s cubic-bezier(0.25, 1, 0.5, 1) 0.15s forwards; }
+.riffle-3 { animation: riffle-page-3 0.7s cubic-bezier(0.25, 1, 0.5, 1) 0.25s forwards; }
+.riffle-4 { animation: riffle-page-4 0.7s cubic-bezier(0.25, 1, 0.5, 1) 0.35s forwards; }
+
+/* ====================================================
+   アニメーション
+   ==================================================== */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-slide-up {
+  animation: slide-up 450ms var(--ease-out) both;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fade-in 350ms ease-out both;
+}
