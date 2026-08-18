@@ -152,9 +152,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
     try {
       const pf = bookRef.current?.pageFlip();
       if (!pf) return;
-      const current = pf.getCurrentPageIndex();
-      const next = isMobile ? current + 1 : current + 2;
-      pf.turnToPage(next);
+      pf.flipNext();
     } catch (e) {
       console.error(e);
       bookRef.current?.pageFlip()?.flipNext();
@@ -165,9 +163,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
     try {
       const pf = bookRef.current?.pageFlip();
       if (!pf) return;
-      const current = pf.getCurrentPageIndex();
-      const prev = isMobile ? Math.max(0, current - 1) : Math.max(0, current - 2);
-      pf.turnToPage(prev);
+      pf.flipPrev();
     } catch (e) {
       console.error(e);
       bookRef.current?.pageFlip()?.flipPrev();
@@ -191,11 +187,11 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
       setTimeout(() => {
         try {
           const pf = bookRef.current?.pageFlip();
-          pf?.turnToPage(isMobile ? 4 : 4);
+          pf?.flipNext();
         } catch (e) {
           bookRef.current?.pageFlip()?.flipNext();
         }
-      }, 200);
+      }, 150);
     } catch (e) {
       console.error(e);
       setIsLoading(false);
@@ -211,7 +207,11 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
     if (onResetToCover) {
       onResetToCover();
     } else {
-      bookRef.current?.pageFlip()?.turnToPage(0);
+      try {
+        bookRef.current?.pageFlip()?.flip(0);
+      } catch (e) {
+        bookRef.current?.pageFlip()?.turnToPage(0);
+      }
     }
   };
 
@@ -293,19 +293,19 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
           maxShadowOpacity={0.4}
           showCover={false}
           mobileScrollSupport={true}
-          className="shadow-[0_20px_50px_-15px_rgba(0,0,0,0.25)] rounded-2xl overflow-hidden"
+          className="shadow-[0_20px_50px_-15px_rgba(0,0,0,0.25)] rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing"
           style={{}}
           startPage={0}
           drawShadow={true}
-          flippingTime={700}
+          flippingTime={600}
           usePortrait={isMobile}
           startZIndex={0}
           autoSize={true}
           clickEventForward={true}
           useMouseEvents={true}
-          swipeDistance={25}
+          swipeDistance={20}
           showPageCorners={true}
-          disableFlipByClick={true}
+          disableFlipByClick={false}
         >
           {/* =========================================================
               見開き 1：【Page 1】扉絵・表紙
@@ -345,14 +345,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
 
                 <button
                   type="button"
-                  onClick={() => {
-                    try {
-                      const pf = bookRef.current?.pageFlip();
-                      pf?.turnToPage(1);
-                    } catch (e) {
-                      handleFlipNext();
-                    }
-                  }}
+                  onClick={handleFlipNext}
                   className="btn-lift w-full py-3 rounded-xl font-sans font-medium text-xs text-[#1C1917] bg-[#FAF8F4] hover:bg-white shadow-[0_4px_15px_rgba(0,0,0,0.2)] flex items-center justify-center gap-2 tracking-wider uppercase md:hidden active:scale-95"
                 >
                   <span>手帖を開く</span>
@@ -415,14 +408,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
               <div className="pt-0.5">
                 <button
                   type="button"
-                  onClick={() => {
-                    try {
-                      const pf = bookRef.current?.pageFlip();
-                      pf?.turnToPage(2);
-                    } catch (e) {
-                      handleFlipNext();
-                    }
-                  }}
+                  onClick={handleFlipNext}
                   className="btn-lift w-full flex items-center justify-center gap-2 py-3 sm:py-3.5 rounded-xl font-sans font-medium text-xs text-cream-50 bg-[#1C1917] shadow-premium active:scale-95"
                 >
                   <span>手帖を開いてお菓子を選ぶ</span>
