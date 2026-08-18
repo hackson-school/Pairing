@@ -41,11 +41,14 @@ const BookPage = forwardRef<
   return (
     <div
       ref={ref}
-      className={`w-full h-full p-4 sm:p-8 flex flex-col justify-between select-none relative overflow-y-auto ${
+      className={`w-full h-full p-4 sm:p-7 flex flex-col justify-between select-none relative ${
         isCoverStyle ? "text-[#FAF8F4]" : "bg-[#FAF8F4] text-[#1C1917]"
       } ${className}`}
-      style={
-        isCoverStyle
+      style={{
+        height: "100%",
+        minHeight: "100%",
+        boxSizing: "border-box",
+        ...(isCoverStyle
           ? {
               background: "linear-gradient(145deg, #24201D 0%, #161412 100%)",
               border: "1px solid #3D3732",
@@ -61,13 +64,13 @@ const BookPage = forwardRef<
               borderRight: isLeft ? "none" : "1px solid #E8E2D9",
               borderTop: "1px solid #E8E2D9",
               borderBottom: "1px solid #E8E2D9",
-            }
-      }
+            }),
+      }}
     >
-      <div className="flex-1">{children}</div>
+      <div className="flex-1 flex flex-col justify-between h-full">{children}</div>
       {pageNumber && (
         <div
-          className={`pt-2.5 sm:pt-4 mt-auto border-t flex items-center justify-between text-[9px] sm:text-[11px] font-sans ${
+          className={`pt-2 mt-auto border-t flex items-center justify-between text-[9px] sm:text-[11px] font-sans shrink-0 ${
             isCoverStyle ? "border-[#8C532B]/30 text-[#948B82]" : "border-[#E8E2D9]/70 text-[#948B82]"
           }`}
         >
@@ -109,9 +112,9 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
   }, []);
 
   const isMobile = windowSize.width < 768;
-  // スマホでは画面いっぱいに広げてデッドゾーンを完全排除
-  const bookWidth = isMobile ? Math.min(windowSize.width - 16, 420) : 450;
-  const bookHeight = isMobile ? Math.min(windowSize.height - 20, 680) : 620;
+  // スマホでコンテンツが上下ぴったり埋まる最適な縦横比
+  const bookWidth = isMobile ? Math.min(windowSize.width - 20, 390) : 450;
+  const bookHeight = isMobile ? Math.min(windowSize.height - 30, 530) : 620;
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -260,12 +263,12 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
 
         {/* @ts-ignore */}
         <HTMLFlipBook
-          key={isMobile ? "mobile-book" : "desktop-book"}
+          key={isMobile ? `mobile-book-${bookWidth}-${bookHeight}` : "desktop-book"}
           ref={bookRef}
           width={bookWidth}
           height={bookHeight}
-          size="stretch"
-          minWidth={300}
+          size="fixed"
+          minWidth={280}
           maxWidth={470}
           minHeight={450}
           maxHeight={640}
