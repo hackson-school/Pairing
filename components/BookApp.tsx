@@ -48,7 +48,7 @@ const BookPage = forwardRef<
   return (
     <div
       ref={ref}
-      className={`w-full h-full p-4 sm:p-7 flex flex-col justify-between select-none relative ${
+      className={`w-full h-full p-3.5 sm:p-5 flex flex-col justify-between select-none relative ${
         isCoverStyle ? "text-[#FAF8F4]" : "bg-[#FAF8F4] text-[#1C1917]"
       } ${className}`}
       style={{
@@ -74,14 +74,14 @@ const BookPage = forwardRef<
             }),
       }}
     >
-      <div className="flex-1 flex flex-col h-full">{children}</div>
+      <div className="flex-1 flex flex-col h-full overflow-hidden justify-between">{children}</div>
       {pageNumber && (
         <div
-          className={`pt-2 mt-auto border-t flex items-center justify-between text-[9px] sm:text-[11px] font-sans shrink-0 ${
+          className={`pt-1.5 mt-auto border-t flex items-center justify-between text-[9px] sm:text-[10px] font-sans shrink-0 ${
             isCoverStyle ? "border-[#8C532B]/30 text-[#948B82]" : "border-[#E8E2D9]/70 text-[#948B82]"
           }`}
         >
-          <span className="tracking-widest uppercase text-[8px] sm:text-[9px]">Sweets & Drink Pairing Journal</span>
+          <span className="tracking-widest uppercase text-[8px] sm:text-[8.5px]">Sweets & Drink Pairing Journal</span>
           <span className="font-display italic font-medium">Page {pageNumber}</span>
         </div>
       )}
@@ -519,25 +519,25 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
               見開き 2：【Page 4】Chapter II 飲み物の気分を選ぶ
           ========================================================= */}
           <BookPage pageNumber={4} side="right">
-            <div className="h-full flex flex-col justify-between space-y-2">
+            <div className="h-full flex flex-col justify-between space-y-1.5">
               <div>
-                <span className="font-sans text-[8px] sm:text-[10px] font-semibold text-charcoal-400 uppercase tracking-widest block mb-0.5">
+                <span className="font-sans text-[8px] sm:text-[9.5px] font-semibold text-charcoal-400 uppercase tracking-widest block mb-0.5">
                   Chapter II · Beverage Direction
                 </span>
                 <h2 className="font-display font-light text-base sm:text-xl text-charcoal-900 leading-tight">
                   合わせたい一杯
                 </h2>
-                <p className="font-sans text-[9px] sm:text-[11px] text-charcoal-400">
+                <p className="font-sans text-[9px] sm:text-[10.5px] text-charcoal-400">
                   お菓子：<span className="font-semibold text-charcoal-800">{sweetsName || "写真のお菓子"}</span>
                 </p>
               </div>
 
-              {/* 味覚の志向（絵文字・AIアイコン全廃） */}
+              {/* 味覚の志向（コンパクト化） */}
               <div className="space-y-1">
-                <span className="font-sans text-[8px] sm:text-[9px] font-bold text-[#8C532B] uppercase tracking-wider block">
+                <span className="font-sans text-[7.5px] sm:text-[8.5px] font-bold text-[#8C532B] uppercase tracking-wider block">
                   ペアリングの志向
                 </span>
-                <div className="grid grid-cols-2 gap-1.5">
+                <div className="grid grid-cols-2 gap-1">
                   {TASTE_FOCUS_OPTIONS.map((item) => {
                     const isSelected = selectedFocus === item.id;
                     return (
@@ -545,23 +545,23 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                         key={item.id}
                         type="button"
                         onClick={() => setSelectedFocus(item.id)}
-                        className={`p-2 rounded-xl border text-left transition-all ${
+                        className={`py-1 px-2 rounded-lg border text-left transition-all ${
                           isSelected
                             ? "bg-[#1C1917] text-cream-50 border-[#1C1917]"
                             : "bg-[#FAF8F4] border-[#E8E2D9] text-charcoal-700 hover:bg-[#F5F2EB]"
                         }`}
                       >
-                        <span className="font-semibold text-[10px] sm:text-[11px] block">{item.label}</span>
-                        <span className="text-[7.5px] sm:text-[8.5px] opacity-75 block mt-0.5 line-clamp-1">{item.desc}</span>
+                        <span className="font-semibold text-[9.5px] sm:text-[10.5px] block leading-tight">{item.label}</span>
+                        <span className="text-[7px] sm:text-[8px] opacity-75 block truncate">{item.desc}</span>
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              {/* ジャンル一覧 */}
+              {/* ジャンル一覧（コンパクト化） */}
               <div className="space-y-1">
-                <span className="font-sans text-[8px] sm:text-[9px] font-bold text-[#8C532B] uppercase tracking-wider block">
+                <span className="font-sans text-[7.5px] sm:text-[8.5px] font-bold text-[#8C532B] uppercase tracking-wider block">
                   飲み物のジャンル指定
                 </span>
                 <div className="space-y-1">
@@ -572,13 +572,13 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                         key={genre.id}
                         type="button"
                         onClick={() => setSelectedCategory(genre.id)}
-                        className={`selectable-row w-full py-1.5 sm:py-2 px-2.5 ${
+                        className={`selectable-row w-full py-1.5 px-2.5 ${
                           isSelected ? "selected" : ""
                         }`}
                       >
                         <div className="text-left">
-                          <p className="font-sans text-[10px] sm:text-[11.5px] font-semibold">{genre.title}</p>
-                          <p className="font-sans text-[8px] sm:text-[9.5px] text-[#948B82]">{genre.subtitle}</p>
+                          <p className="font-sans text-[9.5px] sm:text-[11px] font-semibold leading-tight">{genre.title}</p>
+                          <p className="font-sans text-[7.5px] sm:text-[8.5px] text-[#948B82] leading-tight">{genre.subtitle}</p>
                         </div>
                         <div
                           className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${
@@ -594,11 +594,11 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
               </div>
 
               {/* 鑑定ボタン */}
-              <div className="pt-0.5 flex gap-1.5 sm:gap-2">
+              <div className="pt-1 flex gap-1.5 sm:gap-2">
                 <button
                   type="button"
                   onClick={handleFlipPrev}
-                  className="btn-lift flex items-center justify-center gap-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl font-sans font-medium text-xs border border-cream-300 bg-[#FAF8F4] text-charcoal-600"
+                  className="btn-lift flex items-center justify-center gap-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-sans font-medium text-xs border border-cream-300 bg-[#FAF8F4] text-charcoal-600"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   戻る
@@ -608,7 +608,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                   type="button"
                   onClick={handleDiagnose}
                   disabled={isLoading}
-                  className="btn-lift flex-1 flex items-center justify-center gap-1.5 py-2.5 sm:py-3 rounded-xl font-sans font-medium text-xs text-cream-50 bg-[#1C1917] shadow-premium disabled:opacity-85 transition-all active:scale-95"
+                  className="btn-lift flex-1 flex items-center justify-center gap-1.5 py-2 sm:py-2.5 rounded-xl font-sans font-medium text-xs text-cream-50 bg-[#1C1917] shadow-premium disabled:opacity-85 transition-all active:scale-95"
                 >
                   {isLoading ? (
                     <div className="flex items-center gap-1.5">
