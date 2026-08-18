@@ -236,9 +236,9 @@ export default function BookIntroTransition({ children }: Props) {
             key="hint"
             className="absolute bottom-6 sm:bottom-10 font-sans text-xs text-charcoal-400 tracking-wider text-center z-10"
             initial={{ opacity: 0 }}
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            exit={{ opacity: 0, transition: { duration: 0.2 } }}
-            transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+            animate={{ opacity: 0.8 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
           >
             ✦ タップして手帖を開く ✦
           </motion.p>

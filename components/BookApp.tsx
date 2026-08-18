@@ -99,7 +99,10 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const shareCardRef = useRef<HTMLDivElement>(null);
 
-  const [windowSize, setWindowSize] = useState<{ width: number; height: number }>({ width: 1024, height: 768 });
+  const [windowSize, setWindowSize] = useState<{ width: number; height: number }>({
+    width: typeof window !== "undefined" ? window.innerWidth : 1024,
+    height: typeof window !== "undefined" ? window.innerHeight : 768,
+  });
   const [sweetsName, setSweetsName] = useState<string>("");
   const [image, setImage] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<DrinkCategory>("all");
@@ -110,19 +113,28 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
 
+  // リサイズリスナーを間引き（スマホのアドレスバー伸縮による無限再描画・激重ループを完全防止）
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
     const updateSize = () => {
-      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+      }, 250);
     };
     updateSize();
-    window.addEventListener("resize", updateSize);
-    return () => window.removeEventListener("resize", updateSize);
+    window.addEventListener("resize", updateSize, { passive: true });
+    window.addEventListener("orientationchange", updateSize, { passive: true });
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener("resize", updateSize);
+      window.removeEventListener("orientationchange", updateSize);
+    };
   }, []);
 
   const isMobile = windowSize.width < 768;
-  // PC・スマホともに見切れず美しく収まるサイズ
-  const bookWidth = isMobile ? Math.min(windowSize.width - 16, 420) : 430;
-  const bookHeight = isMobile ? Math.min(windowSize.height - 20, 620) : Math.min(windowSize.height - 80, 590);
+  const bookWidth = isMobile ? Math.min(windowSize.width - 16, 400) : 430;
+  const bookHeight = isMobile ? Math.min(windowSize.height - 20, 600) : Math.min(windowSize.height - 80, 590);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -269,7 +281,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
 
         {/* @ts-ignore */}
         <HTMLFlipBook
-          key={isMobile ? `mobile-book-${bookWidth}-${bookHeight}` : "desktop-book"}
+          key="flipbook-stable-instance"
           ref={bookRef}
           width={bookWidth}
           height={bookHeight}
