@@ -2,8 +2,8 @@
 
 import React, { useRef, useState, useEffect, forwardRef } from "react";
 import HTMLFlipBook from "react-pageflip";
-import { Camera, X, ArrowRight, ArrowLeft, RotateCcw, Share2, Check, Bookmark, Coffee, Download, Sparkles, Clock, Compass, BookOpen } from "lucide-react";
-import { DrinkCategory, MoodCategory, PairingResult } from "@/types/pairing";
+import { Camera, X, ArrowRight, ArrowLeft, RotateCcw, Check, Bookmark, Coffee, Download } from "lucide-react";
+import { DrinkCategory, PairingResult } from "@/types/pairing";
 import { getPairingDiagnosis } from "@/lib/pairingService";
 import { toPng } from "html-to-image";
 
@@ -19,18 +19,18 @@ const SWEETS_PRESETS = [
 ];
 
 const DRINK_GENRES: { id: DrinkCategory; title: string; subtitle: string }[] = [
-  { id: "all", title: "おまかせ（全ジャンル）", subtitle: "科学的相性が最も高い最高の一杯" },
-  { id: "coffee", title: "珈琲（コーヒー）", subtitle: "ドリップ・エスプレッソ・ラテ" },
+  { id: "all", title: "おまかせ（全ジャンル）", subtitle: "相性スコアが最も高い最高の一杯" },
+  { id: "coffee", title: "珈琲（コーヒー）", subtitle: "ドリップ・エスプレッソ・カフェラテ" },
   { id: "tea", title: "紅茶・ハーブティー", subtitle: "ストレート・アールグレイ・ミルク" },
   { id: "green_tea", title: "日本茶・中国茶", subtitle: "深蒸し煎茶・ほうじ茶・烏龍茶" },
   { id: "alcohol", title: "お酒（ワイン・洋酒等）", subtitle: "赤ワイン・ウイスキー・クラフトビール" },
 ];
 
-const MOOD_OPTIONS: { id: MoodCategory; label: string; icon: string }[] = [
-  { id: "relax", label: "ほっと一息", icon: "☕" },
-  { id: "reward", label: "自分へのご褒美", icon: "✨" },
-  { id: "refresh", label: "気分転換", icon: "🍃" },
-  { id: "focus", label: "深い集中", icon: "📖" },
+const TASTE_FOCUS_OPTIONS = [
+  { id: "harmony", label: "風味の同調", desc: "似た香りを重ねて深みを引き出す" },
+  { id: "contrast", label: "後味のキレ", desc: "苦味や酸味で甘みをすっきり整える" },
+  { id: "richness", label: "贅沢なコク", desc: "口いっぱいに広がる濃厚な重層感" },
+  { id: "aftertaste", label: "香りの余韻", desc: "鼻腔に抜ける心地よいアロマを愉しむ" },
 ];
 
 // 本文ページコンポーネント
@@ -74,7 +74,7 @@ const BookPage = forwardRef<
             }),
       }}
     >
-      <div className="flex-1 flex flex-col justify-between h-full">{children}</div>
+      <div className="flex-1 flex flex-col h-full">{children}</div>
       {pageNumber && (
         <div
           className={`pt-2 mt-auto border-t flex items-center justify-between text-[9px] sm:text-[11px] font-sans shrink-0 ${
@@ -103,7 +103,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
   const [sweetsName, setSweetsName] = useState<string>("");
   const [image, setImage] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<DrinkCategory>("all");
-  const [selectedMood, setSelectedMood] = useState<MoodCategory>("relax");
+  const [selectedFocus, setSelectedFocus] = useState<string>("harmony");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [result, setResult] = useState<PairingResult | null>(null);
   const [isSharing, setIsSharing] = useState<boolean>(false);
@@ -120,7 +120,6 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
   }, []);
 
   const isMobile = windowSize.width < 768;
-  // スマホ画面を縦長にめいっぱい活用するサイズ（情報量増大に対応）
   const bookWidth = isMobile ? Math.min(windowSize.width - 16, 420) : 450;
   const bookHeight = isMobile ? Math.min(windowSize.height - 20, 650) : 620;
 
@@ -314,7 +313,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                 </p>
               </div>
 
-              <div className="my-auto flex flex-col items-center justify-center py-2 space-y-2">
+              <div className="my-auto flex flex-col items-center justify-center py-3 space-y-2">
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-[#8C532B]/50 flex items-center justify-center text-[#E4CFBC] shadow-inner bg-[#1A1715]/60">
                   <Bookmark className="w-6 h-6 sm:w-7 sm:h-7 stroke-[1.2]" />
                 </div>
@@ -325,12 +324,9 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
 
               <div className="space-y-2">
                 <div className="p-2.5 rounded-xl bg-[#1F1B18] border border-[#3D3732] text-left text-[9.5px] text-[#948B82] space-y-1">
-                  <div className="flex items-center gap-1.5 text-[#E4CFBC]">
-                    <Sparkles className="w-3 h-3" />
-                    <span className="font-semibold text-[10px]">手帖の役割</span>
-                  </div>
+                  <span className="font-semibold text-[10px] text-[#E4CFBC] block">手帖の役割</span>
                   <p className="leading-relaxed">
-                    お菓子の甘み・油脂・香りを分析し、最も引き立て合う至極の一杯を処方します。
+                    お菓子の甘み・油脂・香りを科学的に読み解き、最も引き立て合う至極の一杯を処方します。
                   </p>
                 </div>
 
@@ -395,14 +391,11 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                 </div>
               </div>
 
-              {/* 五味構造のミニガイド */}
+              {/* 味覚構造ガイド */}
               <div className="p-2 sm:p-2.5 rounded-xl bg-[#FAF5F0] border border-[#E4CFBC] text-[9.5px] sm:text-[10.5px] text-charcoal-700 space-y-1">
-                <div className="flex items-center gap-1 text-[#8C532B]">
-                  <Compass className="w-3 h-3" />
-                  <span className="font-bold uppercase tracking-wider text-[8.5px]">味覚のマリアージュ構造</span>
-                </div>
+                <span className="font-bold uppercase tracking-wider text-[8.5px] text-[#8C532B] block">味覚のマリアージュ構造</span>
                 <p className="leading-relaxed text-charcoal-600">
-                  お菓子の油脂分を飲み物のタンニンや温かさが包み込み、口内をリセットする科学的な心地よさを設計します。
+                  お菓子の油脂分を飲み物の温かさやタンニンが優しく包み込み、口内をリセットする科学的な心地よさを処方します。
                 </p>
               </div>
 
@@ -528,7 +521,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
             <div className="h-full flex flex-col justify-between space-y-2">
               <div>
                 <span className="font-sans text-[8px] sm:text-[10px] font-semibold text-charcoal-400 uppercase tracking-widest block mb-0.5">
-                  Chapter II · Beverage & Mood
+                  Chapter II · Beverage Direction
                 </span>
                 <h2 className="font-display font-light text-base sm:text-xl text-charcoal-900 leading-tight">
                   合わせたい一杯
@@ -538,27 +531,27 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                 </p>
               </div>
 
-              {/* 気分シチュエーション選択 */}
+              {/* 味覚の志向（絵文字・AIアイコン全廃） */}
               <div className="space-y-1">
                 <span className="font-sans text-[8px] sm:text-[9px] font-bold text-[#8C532B] uppercase tracking-wider block">
-                  今の気分・シチュエーション
+                  ペアリングの志向
                 </span>
-                <div className="grid grid-cols-2 gap-1">
-                  {MOOD_OPTIONS.map((mood) => {
-                    const isSelected = selectedMood === mood.id;
+                <div className="grid grid-cols-2 gap-1.5">
+                  {TASTE_FOCUS_OPTIONS.map((item) => {
+                    const isSelected = selectedFocus === item.id;
                     return (
                       <button
-                        key={mood.id}
+                        key={item.id}
                         type="button"
-                        onClick={() => setSelectedMood(mood.id)}
-                        className={`p-1.5 rounded-lg border text-left text-[9.5px] sm:text-[10.5px] flex items-center gap-1.5 transition-all ${
+                        onClick={() => setSelectedFocus(item.id)}
+                        className={`p-2 rounded-xl border text-left transition-all ${
                           isSelected
                             ? "bg-[#1C1917] text-cream-50 border-[#1C1917]"
                             : "bg-[#FAF8F4] border-[#E8E2D9] text-charcoal-700 hover:bg-[#F5F2EB]"
                         }`}
                       >
-                        <span>{mood.icon}</span>
-                        <span className="font-medium">{mood.label}</span>
+                        <span className="font-semibold text-[10px] sm:text-[11px] block">{item.label}</span>
+                        <span className="text-[7.5px] sm:text-[8.5px] opacity-75 block mt-0.5 line-clamp-1">{item.desc}</span>
                       </button>
                     );
                   })}
@@ -633,60 +626,84 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
           </BookPage>
 
           {/* =========================================================
-              見開き 3：【Page 5】Chapter III ペアリング主鑑
+              見開き 3：【Page 5】Chapter III ペアリング主鑑（隙間なし）
           ========================================================= */}
           <BookPage pageNumber={5} side="left">
             {result ? (
               <div className="h-full flex flex-col justify-between space-y-2">
-                <div className="flex items-start justify-between pb-1.5 border-b border-[#E8E2D9]">
-                  <div>
-                    <span className="font-sans text-[8px] sm:text-[9px] font-semibold text-charcoal-400 uppercase tracking-widest block">
-                      {result.sweets.category} · Analysis
-                    </span>
-                    <h3 className="font-display font-light italic text-base sm:text-xl text-charcoal-900 mt-0.5">
-                      {result.sweets.name}
-                    </h3>
-                  </div>
-                  <div className="text-right">
-                    <span className="font-sans text-[7.5px] sm:text-[8.5px] text-charcoal-400 uppercase block">相性スコア</span>
-                    <div className="flex items-baseline justify-end gap-0.5">
-                      <span className="font-display font-bold text-2xl sm:text-3xl text-[#8C532B]">
-                        {result.bestMatch.matchScore}
+                <div className="space-y-2.5">
+                  {/* ヘッダー */}
+                  <div className="flex items-start justify-between pb-1.5 border-b border-[#E8E2D9]">
+                    <div>
+                      <span className="font-sans text-[8px] sm:text-[9px] font-semibold text-charcoal-400 uppercase tracking-widest block">
+                        {result.sweets.category} · Analysis
                       </span>
-                      <span className="font-sans text-[10px] sm:text-xs font-semibold text-[#8C532B]">%</span>
+                      <h3 className="font-display font-light italic text-base sm:text-xl text-charcoal-900 mt-0.5">
+                        {result.sweets.name}
+                      </h3>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-sans text-[7.5px] sm:text-[8.5px] text-charcoal-400 uppercase block">相性スコア</span>
+                      <div className="flex items-baseline justify-end gap-0.5">
+                        <span className="font-display font-bold text-2xl sm:text-3xl text-[#8C532B]">
+                          {result.bestMatch.matchScore}
+                        </span>
+                        <span className="font-sans text-[10px] sm:text-xs font-semibold text-[#8C532B]">%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ベストマッチカード */}
+                  <div className="p-3 rounded-xl bg-[#FAF5F0] border border-[#E4CFBC] space-y-1">
+                    <span className="font-sans text-[7.5px] sm:text-[8.5px] font-bold text-[#8C532B] uppercase tracking-wider block">
+                      Best Match · {result.bestMatch.categoryLabel}
+                    </span>
+                    <h4 className="font-display font-semibold text-sm sm:text-lg text-charcoal-900 leading-tight">
+                      {result.bestMatch.drinkName}
+                    </h4>
+                    <p className="font-sans text-[10px] sm:text-xs text-charcoal-600 leading-relaxed pt-0.5">
+                      「{result.bestMatch.catchphrase}」
+                    </p>
+                  </div>
+
+                  {/* 風味と味覚の分析 */}
+                  <div className="p-2.5 rounded-xl bg-[#F5F2EB] text-xs space-y-1.5 border border-[#E8E2D9]">
+                    <div>
+                      <span className="font-semibold text-charcoal-800 block text-[8px] sm:text-[9.5px] mb-0.5">【香りと風味の同調】</span>
+                      <p className="text-charcoal-600 text-[9px] sm:text-[10.5px] leading-relaxed">
+                        {result.bestMatch.flavorSynergy.harmonyReason}
+                      </p>
+                    </div>
+                    <div className="pt-1.5 border-t border-[#E8E2D9]">
+                      <span className="font-semibold text-charcoal-800 block text-[8px] sm:text-[9.5px] mb-0.5">【味覚の相乗効果（科学的根拠）】</span>
+                      <p className="text-charcoal-600 text-[9px] sm:text-[10.5px] leading-relaxed">
+                        {result.bestMatch.flavorSynergy.scienceNotes}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 味覚の調和度バランス */}
+                  <div className="p-2 rounded-xl bg-[#FAF8F4] border border-[#E8E2D9] space-y-1 text-[8.5px] sm:text-[9.5px]">
+                    <span className="font-semibold text-charcoal-700 uppercase tracking-wider block text-[7.5px]">味覚のマリアージュ指標</span>
+                    <div className="grid grid-cols-3 gap-1 text-center">
+                      <div className="p-1 rounded bg-[#F5F2EB]">
+                        <span className="text-[#948B82] block text-[7.5px]">甘味の調和</span>
+                        <span className="font-bold text-charcoal-800">極上</span>
+                      </div>
+                      <div className="p-1 rounded bg-[#F5F2EB]">
+                        <span className="text-[#948B82] block text-[7.5px]">油脂のリセット</span>
+                        <span className="font-bold text-charcoal-800">最適</span>
+                      </div>
+                      <div className="p-1 rounded bg-[#F5F2EB]">
+                        <span className="text-[#948B82] block text-[7.5px]">香りの重層</span>
+                        <span className="font-bold text-[#8C532B]">同調</span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-2.5 sm:p-3.5 rounded-xl bg-[#FAF5F0] border border-[#E4CFBC] space-y-0.5">
-                  <span className="font-sans text-[7.5px] sm:text-[8.5px] font-bold text-[#8C532B] uppercase tracking-wider block">
-                    Best Match · {result.bestMatch.categoryLabel}
-                  </span>
-                  <h4 className="font-display font-semibold text-sm sm:text-lg text-charcoal-900">
-                    {result.bestMatch.drinkName}
-                  </h4>
-                  <p className="font-sans text-[10px] sm:text-xs text-charcoal-600 leading-relaxed pt-0.5">
-                    「{result.bestMatch.catchphrase}」
-                  </p>
-                </div>
-
-                <div className="p-2.5 rounded-xl bg-[#F5F2EB] text-xs space-y-1.5 border border-[#E8E2D9]">
-                  <div>
-                    <span className="font-semibold text-charcoal-800 block text-[8px] sm:text-[9.5px] mb-0.5">【香りと風味の同調】</span>
-                    <p className="text-charcoal-600 text-[9px] sm:text-[10.5px] leading-relaxed">
-                      {result.bestMatch.flavorSynergy.harmonyReason}
-                    </p>
-                  </div>
-                  <div className="pt-1.5 border-t border-[#E8E2D9]">
-                    <span className="font-semibold text-charcoal-800 block text-[8px] sm:text-[9.5px] mb-0.5">【味覚の相乗効果（科学的根拠）】</span>
-                    <p className="text-charcoal-600 text-[9px] sm:text-[10.5px] leading-relaxed">
-                      {result.bestMatch.flavorSynergy.scienceNotes}
-                    </p>
-                  </div>
-                </div>
-
                 {/* モバイル用次へボタン */}
-                <div className="pt-0.5 md:hidden">
+                <div className="pt-1 md:hidden">
                   <button
                     type="button"
                     onClick={handleFlipNext}
@@ -708,76 +725,78 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
           </BookPage>
 
           {/* =========================================================
-              見開き 3：【Page 6】Chapter IV 嗜み方 ＆ 他の候補 ＆ アクション
+              見開き 3：【Page 6】Chapter IV 嗜み方 ＆ 他の候補 ＆ アクション（隙間なし）
           ========================================================= */}
           <BookPage pageNumber={6} side="right">
             {result ? (
               <div className="h-full flex flex-col justify-between space-y-2">
-                <div>
-                  <span className="font-sans text-[8px] sm:text-[10px] font-semibold text-charcoal-400 uppercase tracking-widest block mb-0.5">
-                    Chapter IV · Serving & Alternatives
-                  </span>
-                  <h3 className="font-display font-light text-base sm:text-lg text-charcoal-900">
-                    嗜み方と他の候補
-                  </h3>
-                </div>
-
-                {/* 4グリッド サービングガイド */}
-                <div className="grid grid-cols-2 gap-1 sm:gap-1.5 text-xs">
-                  <div className="p-2 rounded-xl bg-[#FAF8F4] border border-[#E8E2D9]">
-                    <span className="text-[7.5px] sm:text-[8.5px] text-[#948B82] block">おすすめ温度</span>
-                    <span className="font-medium text-charcoal-800 text-[9.5px] sm:text-[10.5px]">{result.bestMatch.servingGuide.temperature}</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-[#FAF8F4] border border-[#E8E2D9]">
-                    <span className="text-[7.5px] sm:text-[8.5px] text-[#948B82] block">淹れ方・濃さ</span>
-                    <span className="font-medium text-charcoal-800 text-[9.5px] sm:text-[10.5px]">{result.bestMatch.servingGuide.strengthOrBrew}</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-[#FAF8F4] border border-[#E8E2D9]">
-                    <span className="text-[7.5px] sm:text-[8.5px] text-[#948B82] block">器・グラス</span>
-                    <span className="font-medium text-charcoal-800 text-[9.5px] sm:text-[10.5px]">{result.bestMatch.servingGuide.recommendedVessel}</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-[#FAF8F4] border border-[#E8E2D9]">
-                    <span className="text-[7.5px] sm:text-[8.5px] text-[#948B82] block">プロの一言</span>
-                    <span className="font-medium text-charcoal-800 text-[9.5px] sm:text-[10.5px] line-clamp-1">{result.bestMatch.servingGuide.specialTip}</span>
-                  </div>
-                </div>
-
-                {/* おすすめのシチュエーション・時間帯 */}
-                <div className="p-2 rounded-xl bg-[#FAF5F0] border border-[#E4CFBC] text-[9px] sm:text-[10px] text-charcoal-700 flex items-center gap-2">
-                  <Clock className="w-3.5 h-3.5 text-[#8C532B] shrink-0" />
+                <div className="space-y-2">
                   <div>
-                    <span className="font-bold text-[#8C532B] block text-[8px] uppercase">おすすめのシーン</span>
-                    <span className="text-charcoal-600">午後3時のティーブレイク、または静かな夜のひとときに。</span>
-                  </div>
-                </div>
-
-                {/* 他の組み合わせ */}
-                {result.alternativePairings && result.alternativePairings.length > 0 && (
-                  <div className="space-y-1">
-                    <span className="font-sans text-[7.5px] sm:text-[8.5px] font-semibold text-charcoal-400 uppercase tracking-wider block">
-                      他の候補・別の表情
+                    <span className="font-sans text-[8px] sm:text-[10px] font-semibold text-charcoal-400 uppercase tracking-widest block mb-0.5">
+                      Chapter IV · Serving & Alternatives
                     </span>
-                    <div className="space-y-1">
-                      {result.alternativePairings.slice(0, 2).map((alt, i) => (
-                        <div
-                          key={i}
-                          className="flex items-center justify-between p-1.5 rounded-xl bg-[#FAF8F4] border border-[#E8E2D9] text-xs"
-                        >
-                          <div className="flex items-center gap-1">
-                            <span className="text-[7.5px] sm:text-[8px] px-1 py-0.5 rounded bg-[#F5F2EB] text-[#736B63]">
-                              {alt.categoryLabel}
-                            </span>
-                            <span className="font-medium text-charcoal-800 text-[9px] sm:text-[10.5px]">{alt.drinkName}</span>
-                          </div>
-                          <span className="font-display font-bold text-[#8C532B] text-xs">{alt.matchScore}%</span>
-                        </div>
-                      ))}
+                    <h3 className="font-display font-light text-base sm:text-lg text-charcoal-900">
+                      嗜み方と他の候補
+                    </h3>
+                  </div>
+
+                  {/* 4グリッド サービングガイド */}
+                  <div className="grid grid-cols-2 gap-1 sm:gap-1.5 text-xs">
+                    <div className="p-2 rounded-xl bg-[#FAF8F4] border border-[#E8E2D9]">
+                      <span className="text-[7.5px] sm:text-[8.5px] text-[#948B82] block">おすすめ温度</span>
+                      <span className="font-medium text-charcoal-800 text-[9.5px] sm:text-[10.5px]">{result.bestMatch.servingGuide.temperature}</span>
+                    </div>
+                    <div className="p-2 rounded-xl bg-[#FAF8F4] border border-[#E8E2D9]">
+                      <span className="text-[7.5px] sm:text-[8.5px] text-[#948B82] block">淹れ方・濃さ</span>
+                      <span className="font-medium text-charcoal-800 text-[9.5px] sm:text-[10.5px]">{result.bestMatch.servingGuide.strengthOrBrew}</span>
+                    </div>
+                    <div className="p-2 rounded-xl bg-[#FAF8F4] border border-[#E8E2D9]">
+                      <span className="text-[7.5px] sm:text-[8.5px] text-[#948B82] block">器・グラス</span>
+                      <span className="font-medium text-charcoal-800 text-[9.5px] sm:text-[10.5px]">{result.bestMatch.servingGuide.recommendedVessel}</span>
+                    </div>
+                    <div className="p-2 rounded-xl bg-[#FAF8F4] border border-[#E8E2D9]">
+                      <span className="text-[7.5px] sm:text-[8.5px] text-[#948B82] block">プロの一言</span>
+                      <span className="font-medium text-charcoal-800 text-[9.5px] sm:text-[10.5px] line-clamp-1">{result.bestMatch.servingGuide.specialTip}</span>
                     </div>
                   </div>
-                )}
+
+                  {/* テイスティング手順（Tasting Ritual） */}
+                  <div className="p-2.5 rounded-xl bg-[#F5F2EB] border border-[#E8E2D9] text-[9px] sm:text-[10px] text-charcoal-700 space-y-1">
+                    <span className="font-bold text-[#8C532B] block text-[8px] uppercase tracking-wider">ペアリングの作法</span>
+                    <div className="space-y-0.5 text-charcoal-600">
+                      <p><strong>1.</strong> 先にお菓子を一口味わい、口いっぱいに甘みと香りを広げます。</p>
+                      <p><strong>2.</strong> 余韻が残るうちに温かい一杯を含み、調和の重なりを愉しみます。</p>
+                    </div>
+                  </div>
+
+                  {/* 他の組み合わせ */}
+                  {result.alternativePairings && result.alternativePairings.length > 0 && (
+                    <div className="space-y-1">
+                      <span className="font-sans text-[7.5px] sm:text-[8.5px] font-semibold text-charcoal-400 uppercase tracking-wider block">
+                        他の候補・別の表情
+                      </span>
+                      <div className="space-y-1">
+                        {result.alternativePairings.slice(0, 2).map((alt, i) => (
+                          <div
+                            key={i}
+                            className="flex items-center justify-between p-1.5 rounded-xl bg-[#FAF8F4] border border-[#E8E2D9] text-xs"
+                          >
+                            <div className="flex items-center gap-1">
+                              <span className="text-[7.5px] sm:text-[8px] px-1 py-0.5 rounded bg-[#F5F2EB] text-[#736B63]">
+                                {alt.categoryLabel}
+                              </span>
+                              <span className="font-medium text-charcoal-800 text-[9px] sm:text-[10.5px]">{alt.drinkName}</span>
+                            </div>
+                            <span className="font-display font-bold text-[#8C532B] text-xs">{alt.matchScore}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* 下部アクションボタン */}
-                <div className="flex gap-1.5 pt-0.5">
+                <div className="flex gap-1.5 pt-1">
                   <button
                     type="button"
                     onClick={handleOpenImageSaveModal}
