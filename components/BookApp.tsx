@@ -5,7 +5,6 @@ import HTMLFlipBook from "react-pageflip";
 import { Camera, X, ArrowRight, ArrowLeft, RotateCcw, Check, Bookmark, Coffee, Download, Share2 } from "lucide-react";
 import { DrinkCategory, PairingResult } from "@/types/pairing";
 import { getPairingDiagnosis } from "@/lib/pairingService";
-import { toPng } from "html-to-image";
 
 const SWEETS_PRESETS = [
   { name: "カヌレ", category: "焼き菓子", note: "焦がしカラメルとラム酒", texture: "外カリ中モチ" },
@@ -216,15 +215,228 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
   };
 
   const handleOpenImageSaveModal = async () => {
-    if (!result || !shareCardRef.current || isSharing) return;
+    if (!result || isSharing) return;
 
     setIsSharing(true);
     try {
-      const dataUrl = await toPng(shareCardRef.current, {
-        cacheBust: true,
-        quality: 1.0,
-        pixelRatio: 2,
-      });
+      // 100%確実にすべての端末（iOS Safari, Android, PC）で高速・高画質生成する Canvas 2D レンダラー
+      const canvas = document.createElement("canvas");
+      const width = 800;
+      const height = 1000;
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Canvas context is not available");
+
+      // 1. 背景（上質なエクリュ・和紙テクスチャトーン）
+      ctx.fillStyle = "#FAF8F4";
+      ctx.fillRect(0, 0, width, height);
+
+      // 2. 外枠フレーム（ブロンズ＆ゴールドのエレガントな二重枠）
+      ctx.strokeStyle = "#E8E2D9";
+      ctx.lineWidth = 4;
+      ctx.strokeRect(20, 20, width - 40, height - 40);
+
+      ctx.strokeStyle = "rgba(140, 83, 43, 0.4)";
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(32, 32, width - 64, height - 64);
+
+      // コーナー装飾（手帖らしい上品なアクセント）
+      const cornerSize = 16;
+      ctx.fillStyle = "#8C532B";
+      ctx.fillRect(30, 30, cornerSize, 2);
+      ctx.fillRect(30, 30, 2, cornerSize);
+      ctx.fillRect(width - 30 - cornerSize, 30, cornerSize, 2);
+      ctx.fillRect(width - 32, 30, 2, cornerSize);
+      ctx.fillRect(30, height - 32, cornerSize, 2);
+      ctx.fillRect(30, height - 30 - cornerSize, 2, cornerSize);
+      ctx.fillRect(width - 30 - cornerSize, height - 32, cornerSize, 2);
+      ctx.fillRect(width - 32, height - 30 - cornerSize, 2, cornerSize);
+
+      // 3. ヘッダーエリア
+      ctx.fillStyle = "#8C532B";
+      ctx.font = "bold 14px sans-serif";
+      ctx.letterSpacing = "4px";
+      ctx.fillText("FLAVOR PAIRING JOURNAL", 60, 80);
+
+      ctx.fillStyle = "#1C1917";
+      ctx.font = "italic 32px serif";
+      ctx.fillText("お菓子と飲み物の手帖", 60, 122);
+
+      // 日付
+      const dateStr = new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" });
+      ctx.fillStyle = "#948B82";
+      ctx.font = "14px sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText(dateStr, width - 60, 115);
+      ctx.textAlign = "left";
+
+      // 水平区切り線
+      ctx.strokeStyle = "#E8E2D9";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(60, 145);
+      ctx.lineTo(width - 60, 145);
+      ctx.stroke();
+
+      // 4. お菓子情報 & 相性スコア
+      ctx.fillStyle = "#948B82";
+      ctx.font = "bold 14px sans-serif";
+      ctx.fillText(`【お菓子】 ${result.sweets.category || "Confectionery"}`, 60, 185);
+
+      ctx.fillStyle = "#1C1917";
+      ctx.font = "bold 34px sans-serif";
+      ctx.fillText(result.sweets.name, 60, 230);
+
+      // 相性スコアバッジ
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#8C532B";
+      ctx.font = "bold 14px sans-serif";
+      ctx.fillText("相性スコア", width - 60, 190);
+
+      ctx.font = "bold 48px serif";
+      ctx.fillText(`${result.bestMatch.matchScore}%`, width - 60, 238);
+      ctx.textAlign = "left";
+
+      // 5. ベストマッチ カードボックス
+      ctx.fillStyle = "#FAF5F0";
+      ctx.strokeStyle = "#E4CFBC";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(60, 265, width - 120, 140, 16);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#8C532B";
+      ctx.font = "bold 14px sans-serif";
+      ctx.fillText(`✦ BEST MATCH · ${result.bestMatch.categoryLabel}`, 85, 305);
+
+      ctx.fillStyle = "#1C1917";
+      ctx.font = "bold 28px sans-serif";
+      ctx.fillText(result.bestMatch.drinkName, 85, 345);
+
+      ctx.fillStyle = "#57534E";
+      ctx.font = "italic 16px serif";
+      ctx.fillText(`「${result.bestMatch.catchphrase}」`, 85, 380);
+
+      // 6. 科学的分析・調和の理由ボックス
+      ctx.fillStyle = "#F5F2EB";
+      ctx.strokeStyle = "#E8E2D9";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(60, 425, width - 120, 230, 16);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#1C1917";
+      ctx.font = "bold 16px sans-serif";
+      ctx.fillText("【香りと風味の同調】", 85, 465);
+
+      ctx.fillStyle = "#44403C";
+      ctx.font = "15px sans-serif";
+      // テキスト折り返し描画
+      const wrapText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number) => {
+        let line = "";
+        for (let n = 0; n < text.length; n++) {
+          const testLine = line + text[n];
+          const metrics = ctx.measureText(testLine);
+          if (metrics.width > maxWidth && n > 0) {
+            ctx.fillText(line, x, y);
+            line = text[n];
+            y += lineHeight;
+          } else {
+            line = testLine;
+          }
+        }
+        ctx.fillText(line, x, y);
+        return y;
+      };
+
+      const yAfterHarmony = wrapText(result.bestMatch.flavorSynergy.harmonyReason, 85, 495, width - 170, 24);
+
+      // 区切り
+      ctx.strokeStyle = "#E8E2D9";
+      ctx.beginPath();
+      ctx.moveTo(85, 545);
+      ctx.lineTo(width - 85, 545);
+      ctx.stroke();
+
+      ctx.fillStyle = "#1C1917";
+      ctx.font = "bold 16px sans-serif";
+      ctx.fillText("【味覚の相乗効果（科学的根拠）】", 85, 575);
+
+      ctx.fillStyle = "#44403C";
+      ctx.font = "15px sans-serif";
+      wrapText(result.bestMatch.flavorSynergy.scienceNotes, 85, 605, width - 170, 24);
+
+      // 7. サービングガイド（おすすめ温度 & 淹れ方）
+      const guideBoxWidth = (width - 135) / 2;
+
+      // 左ボックス：温度
+      ctx.fillStyle = "#FAF8F4";
+      ctx.strokeStyle = "#E8E2D9";
+      ctx.beginPath();
+      ctx.roundRect(60, 675, guideBoxWidth, 80, 12);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#948B82";
+      ctx.font = "13px sans-serif";
+      ctx.fillText("おすすめ温度", 75, 705);
+      ctx.fillStyle = "#1C1917";
+      ctx.font = "bold 16px sans-serif";
+      ctx.fillText(result.bestMatch.servingGuide.temperature, 75, 735);
+
+      // 右ボックス：淹れ方
+      ctx.fillStyle = "#FAF8F4";
+      ctx.strokeStyle = "#E8E2D9";
+      ctx.beginPath();
+      ctx.roundRect(60 + guideBoxWidth + 15, 675, guideBoxWidth, 80, 12);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#948B82";
+      ctx.font = "13px sans-serif";
+      ctx.fillText("淹れ方・濃さ", 60 + guideBoxWidth + 30, 705);
+      ctx.fillStyle = "#1C1917";
+      ctx.font = "bold 16px sans-serif";
+      ctx.fillText(result.bestMatch.servingGuide.strengthOrBrew, 60 + guideBoxWidth + 30, 735);
+
+      // 8. テイスティングの作法
+      ctx.fillStyle = "#FAF5F0";
+      ctx.strokeStyle = "#E4CFBC";
+      ctx.beginPath();
+      ctx.roundRect(60, 775, width - 120, 110, 12);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#8C532B";
+      ctx.font = "bold 14px sans-serif";
+      ctx.fillText("✦ テイスティングの作法", 80, 805);
+
+      ctx.fillStyle = "#44403C";
+      ctx.font = "14px sans-serif";
+      ctx.fillText("1. 先にお菓子を一口味わい、口いっぱいに甘みと香りを広げます。", 80, 835);
+      ctx.fillText("2. 余韻が残るうちに温かい一杯を含み、調和の重なりを愉しみます。", 80, 862);
+
+      // 9. フッター
+      ctx.strokeStyle = "#E8E2D9";
+      ctx.beginPath();
+      ctx.moveTo(60, 915);
+      ctx.lineTo(width - 60, 915);
+      ctx.stroke();
+
+      ctx.fillStyle = "#948B82";
+      ctx.font = "12px sans-serif";
+      ctx.fillText("Sweets & Drink Pairing Journal · Edition 2026", 60, 945);
+
+      ctx.textAlign = "right";
+      ctx.font = "italic 13px serif";
+      ctx.fillText("#お菓子ペアリング手帖", width - 60, 945);
+      ctx.textAlign = "left";
+
+      // 完了：DataURLに変換
+      const dataUrl = canvas.toDataURL("image/png");
       setGeneratedImageUrl(dataUrl);
       setShowImageModal(true);
     } catch (err) {
@@ -239,7 +451,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
     if (!generatedImageUrl || !result) return;
     try {
       const blob = await (await fetch(generatedImageUrl)).blob();
-      const file = new File([blob], `pairing-note-${result.sweets.name}.png`, { type: "image/png" });
+      const file = new File([blob], `pairing-${result.sweets.name}.png`, { type: "image/png" });
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
@@ -931,108 +1143,6 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                 <Download className="w-3.5 h-3.5" />
                 <span>保存</span>
               </a>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* =========================================================
-          画像書き出し用の高解像度手帖カード（不可視レイヤー）
-      ========================================================= */}
-      {result && (
-        <div className="fixed left-0 top-0 opacity-0 pointer-events-none -z-50">
-          <div
-            ref={shareCardRef}
-            className="w-[520px] bg-[#FAF8F4] text-[#1C1917] p-9 rounded-2xl relative overflow-hidden flex flex-col justify-between"
-            style={{
-              border: "2px solid #E8E2D9",
-              boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
-            }}
-          >
-            <div className="absolute inset-3 border border-[#8C532B]/30 rounded-xl pointer-events-none" />
-
-            <div className="flex items-center justify-between pb-4 border-b border-[#E8E2D9] relative z-10">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-[#1C1917] flex items-center justify-center text-[#FAF8F4]">
-                  <Bookmark className="w-3.5 h-3.5 stroke-[1.5]" />
-                </div>
-                <div>
-                  <span className="font-sans text-[9px] font-semibold text-[#8C532B] uppercase tracking-widest block">
-                    Pairing Journal
-                  </span>
-                  <h3 className="font-display italic text-base text-[#1C1917] leading-none">
-                    お菓子と飲み物の手帖
-                  </h3>
-                </div>
-              </div>
-              <span className="font-sans text-[10px] text-[#948B82]">
-                {new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" })}
-              </span>
-            </div>
-
-            <div className="py-5 space-y-4 relative z-10">
-              <div className="flex items-end justify-between">
-                <div>
-                  <span className="font-sans text-[10px] font-semibold text-charcoal-400 uppercase tracking-widest block">
-                    {result.sweets.category}
-                  </span>
-                  <h2 className="font-display font-light italic text-2xl text-charcoal-900">
-                    {result.sweets.name}
-                  </h2>
-                </div>
-                <div className="text-right">
-                  <span className="font-sans text-[9px] text-charcoal-400 uppercase block">相性スコア</span>
-                  <div className="flex items-baseline justify-end gap-0.5">
-                    <span className="font-display font-bold text-3xl text-[#8C532B]">
-                      {result.bestMatch.matchScore}
-                    </span>
-                    <span className="font-sans text-xs font-semibold text-[#8C532B]">%</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-xl bg-[#FAF5F0] border border-[#E4CFBC] space-y-1">
-                <span className="font-sans text-[9px] font-bold text-[#8C532B] uppercase tracking-wider block">
-                  Best Match · {result.bestMatch.categoryLabel}
-                </span>
-                <h4 className="font-display font-semibold text-xl text-charcoal-900">
-                  {result.bestMatch.drinkName}
-                </h4>
-                <p className="font-sans text-xs text-charcoal-600 leading-relaxed pt-0.5">
-                  「{result.bestMatch.catchphrase}」
-                </p>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-[#F5F2EB] text-xs space-y-2 border border-[#E8E2D9]">
-                <div>
-                  <span className="font-semibold text-charcoal-800 block text-[10px] mb-0.5">【香りと風味の同調】</span>
-                  <p className="text-charcoal-600 text-[11px] leading-relaxed">
-                    {result.bestMatch.flavorSynergy.harmonyReason}
-                  </p>
-                </div>
-                <div className="pt-2 border-t border-[#E8E2D9]">
-                  <span className="font-semibold text-charcoal-800 block text-[10px] mb-0.5">【味覚の相乗効果】</span>
-                  <p className="text-charcoal-600 text-[11px] leading-relaxed">
-                    {result.bestMatch.flavorSynergy.scienceNotes}
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="p-2 rounded-lg bg-[#FAF8F4] border border-[#E8E2D9]">
-                  <span className="text-[9px] text-[#948B82] block">おすすめ温度</span>
-                  <span className="font-medium text-charcoal-800 text-[11px]">{result.bestMatch.servingGuide.temperature}</span>
-                </div>
-                <div className="p-2 rounded-lg bg-[#FAF8F4] border border-[#E8E2D9]">
-                  <span className="text-[9px] text-[#948B82] block">淹れ方・濃さ</span>
-                  <span className="font-medium text-charcoal-800 text-[11px]">{result.bestMatch.servingGuide.strengthOrBrew}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-[#E8E2D9] flex items-center justify-between text-[10px] text-[#948B82] relative z-10">
-              <span className="tracking-widest uppercase text-[9px]">Sweets & Drink Pairing Journal</span>
-              <span className="font-serif italic">#お菓子ペアリング</span>
             </div>
           </div>
         </div>
