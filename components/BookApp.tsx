@@ -142,19 +142,19 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
     try {
       const pf = bookRef.current?.pageFlip();
       if (!pf) return;
-      const current = pf.getCurrentPageIndex() || 0;
-      // 美しいペラめくりアニメーションを発動
-      if (typeof pf.flip === "function") {
-        pf.flip(current + 1, "bottom");
-      } else if (typeof pf.flipNext === "function") {
-        pf.flipNext("bottom");
-      } else if (typeof pf.turnToNextPage === "function") {
+      if (typeof pf.turnToNextPage === "function") {
         pf.turnToNextPage();
+      } else if (typeof pf.flipNext === "function") {
+        pf.flipNext();
+      } else {
+        const step = isMobile ? 1 : 2;
+        const current = pf.getCurrentPageIndex() || 0;
+        pf.turnToPage(current + step);
       }
     } catch (e) {
       console.error("handleFlipNext error:", e);
       try {
-        bookRef.current?.pageFlip()?.flipNext("bottom");
+        bookRef.current?.pageFlip()?.turnToNextPage();
       } catch (err) {
         console.error(err);
       }
@@ -165,20 +165,21 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
     try {
       const pf = bookRef.current?.pageFlip();
       if (!pf) return;
-      const current = pf.getCurrentPageIndex() || 0;
-      if (current <= 0) return;
-      // 美しいペラめくりアニメーションを発動
-      if (typeof pf.flip === "function") {
-        pf.flip(current - 1, "bottom");
-      } else if (typeof pf.flipPrev === "function") {
-        pf.flipPrev("bottom");
-      } else if (typeof pf.turnToPrevPage === "function") {
+      if (typeof pf.turnToPrevPage === "function") {
         pf.turnToPrevPage();
+      } else if (typeof pf.flipPrev === "function") {
+        pf.flipPrev();
+      } else {
+        const step = isMobile ? 1 : 2;
+        const current = pf.getCurrentPageIndex() || 0;
+        if (current > 0) {
+          pf.turnToPage(Math.max(0, current - step));
+        }
       }
     } catch (e) {
       console.error("handleFlipPrev error:", e);
       try {
-        bookRef.current?.pageFlip()?.flipPrev("bottom");
+        bookRef.current?.pageFlip()?.turnToPrevPage();
       } catch (err) {
         console.error(err);
       }
@@ -202,11 +203,12 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
       setTimeout(() => {
         try {
           const pf = bookRef.current?.pageFlip();
-          const current = pf?.getCurrentPageIndex() || 0;
-          if (typeof pf?.flip === "function") {
-            pf.flip(current + 1, "bottom");
+          if (typeof pf?.turnToNextPage === "function") {
+            pf.turnToNextPage();
+          } else if (typeof pf?.flipNext === "function") {
+            pf.flipNext();
           } else {
-            pf?.flipNext?.("bottom");
+            pf?.turnToPage(4);
           }
         } catch (e) {
           bookRef.current?.pageFlip()?.turnToPage(4);
