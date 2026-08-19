@@ -143,9 +143,10 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
   const handleFlipNext = () => {
     try {
       const pageFlip = bookRef.current?.pageFlip?.();
-      if (pageFlip) {
-        pageFlip.flipNext();
-      }
+      if (!pageFlip) return;
+      const current = pageFlip.getCurrentPageIndex() ?? 0;
+      const step = isMobile ? 1 : 2;
+      pageFlip.turnToPage(current + step);
     } catch (e) {
       console.error("handleFlipNext error:", e);
     }
@@ -154,8 +155,11 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
   const handleFlipPrev = () => {
     try {
       const pageFlip = bookRef.current?.pageFlip?.();
-      if (pageFlip) {
-        pageFlip.flipPrev();
+      if (!pageFlip) return;
+      const current = pageFlip.getCurrentPageIndex() ?? 0;
+      const step = isMobile ? 1 : 2;
+      if (current > 0) {
+        pageFlip.turnToPage(Math.max(0, current - step));
       }
     } catch (e) {
       console.error("handleFlipPrev error:", e);
