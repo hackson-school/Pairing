@@ -548,7 +548,18 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
           swipeDistance={20}
           showPageCorners={false}
           disableFlipByClick={true}
-          onFlip={() => {
+          onFlip={(e: any) => {
+            const pageIndex = typeof e?.data === "number" ? e.data : undefined;
+            // 診断結果が存在しないのに Page 5 (index 4) 以降へ進もうとした場合は即座に Page 4 (index 3) へ押し戻す
+            if (!result && pageIndex !== undefined && pageIndex >= 4) {
+              setTimeout(() => {
+                try {
+                  bookRef.current?.pageFlip()?.turnToPage(3);
+                } catch (err) {
+                  bookRef.current?.pageFlip()?.flip(3);
+                }
+              }, 50);
+            }
             setTimeout(() => setIsPageTurning(false), 200);
           }}
         >
@@ -774,7 +785,17 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
               見開き 2：【Page 4】Chapter II 飲み物の気分を選ぶ
           ========================================================= */}
           <BookPage pageNumber={4} side="right">
-            <div className="h-full flex flex-col justify-between space-y-1.5">
+            <div className="h-full flex flex-col justify-between space-y-1.5 relative">
+              {/* 鑑定前はページの右端・右下をタップ/ドラッグしても勝手にめくられないようガード */}
+              {!result && (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  className="absolute top-0 bottom-0 right-0 w-8 z-30 pointer-events-auto"
+                />
+              )}
+
               <div>
                 <span className="font-sans text-[8px] sm:text-[9.5px] font-semibold text-charcoal-400 uppercase tracking-widest block mb-0.5">
                   Chapter II · Beverage Direction
