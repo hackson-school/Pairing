@@ -139,20 +139,19 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
   const FLIP_LOCK_DURATION = 600;
 
   const handleFlipNext = () => {
-    const now = Date.now();
-    if (isPageTurning || now - lastFlipTimeRef.current < 450) return;
-    lastFlipTimeRef.current = now;
-    setIsPageTurning(true);
-
     try {
       const pf = bookRef.current?.pageFlip();
-      if (!pf) {
-        setIsPageTurning(false);
-        return;
+      if (!pf) return;
+      if (typeof pf.turnToNextPage === "function") {
+        pf.turnToNextPage();
+      } else if (typeof pf.flipNext === "function") {
+        pf.flipNext("bottom");
+      } else {
+        const current = pf.getCurrentPageIndex() || 0;
+        pf.turnToPage(current + 1);
       }
-      pf.flipNext();
     } catch (e) {
-      console.error(e);
+      console.error("handleFlipNext error:", e);
       try {
         const pf = bookRef.current?.pageFlip();
         const current = pf?.getCurrentPageIndex?.() ?? 0;
@@ -161,27 +160,24 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
         console.error(err);
       }
     }
-
-    setTimeout(() => {
-      setIsPageTurning(false);
-    }, FLIP_LOCK_DURATION);
   };
 
   const handleFlipPrev = () => {
-    const now = Date.now();
-    if (isPageTurning || now - lastFlipTimeRef.current < 450) return;
-    lastFlipTimeRef.current = now;
-    setIsPageTurning(true);
-
     try {
       const pf = bookRef.current?.pageFlip();
-      if (!pf) {
-        setIsPageTurning(false);
-        return;
+      if (!pf) return;
+      if (typeof pf.turnToPrevPage === "function") {
+        pf.turnToPrevPage();
+      } else if (typeof pf.flipPrev === "function") {
+        pf.flipPrev("bottom");
+      } else {
+        const current = pf.getCurrentPageIndex() || 0;
+        if (current > 0) {
+          pf.turnToPage(current - 1);
+        }
       }
-      pf.flipPrev();
     } catch (e) {
-      console.error(e);
+      console.error("handleFlipPrev error:", e);
       try {
         const pf = bookRef.current?.pageFlip();
         const current = pf?.getCurrentPageIndex?.() ?? 0;
@@ -192,10 +188,6 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
         console.error(err);
       }
     }
-
-    setTimeout(() => {
-      setIsPageTurning(false);
-    }, FLIP_LOCK_DURATION);
   };
 
   const handleDiagnose = async () => {
@@ -215,9 +207,13 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
       setTimeout(() => {
         try {
           const pf = bookRef.current?.pageFlip();
-          pf?.flipNext();
+          if (typeof pf?.turnToNextPage === "function") {
+            pf.turnToNextPage();
+          } else {
+            pf?.flipNext?.("bottom");
+          }
         } catch (e) {
-          bookRef.current?.pageFlip()?.flipNext();
+          bookRef.current?.pageFlip()?.turnToPage(4);
         }
       }, 150);
     } catch (e) {
@@ -513,7 +509,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
       </div>
 
       {/* 本のコンテナ */}
-      <div className={`relative w-full max-w-[940px] flex justify-center perspective-[2000px] overflow-visible ${isPageTurning ? "pointer-events-none select-none" : ""}`}>
+      <div className="relative w-full max-w-[940px] flex justify-center perspective-[2000px] overflow-visible">
         {/* 中央の背表紙シャドウ（PC見開き時のみ表示） */}
         <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-6 bg-gradient-to-r from-transparent via-black/[0.08] to-transparent pointer-events-none z-20 hidden md:block" />
 
@@ -535,7 +531,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
           style={{}}
           startPage={0}
           drawShadow={true}
-          flippingTime={600}
+          flippingTime={500}
           usePortrait={isMobile}
           startZIndex={0}
           autoSize={true}
@@ -556,7 +552,6 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                 }
               }, 50);
             }
-            setTimeout(() => setIsPageTurning(false), 200);
           }}
         >
           {/* =========================================================
@@ -597,12 +592,11 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
 
                 <button
                   type="button"
-                  disabled={isPageTurning}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleFlipNext();
                   }}
-                  className="btn-lift w-full py-3 rounded-xl font-sans font-medium text-xs text-[#1C1917] bg-[#FAF8F4] hover:bg-white shadow-[0_4px_15px_rgba(0,0,0,0.2)] flex items-center justify-center gap-2 tracking-wider uppercase md:hidden active:scale-95 disabled:pointer-events-none disabled:opacity-75"
+                  className="btn-lift w-full py-3 rounded-xl font-sans font-medium text-xs text-[#1C1917] bg-[#FAF8F4] hover:bg-white shadow-[0_4px_15px_rgba(0,0,0,0.2)] flex items-center justify-center gap-2 tracking-wider uppercase md:hidden active:scale-95 cursor-pointer"
                 >
                   <span>手帖を開く</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -664,12 +658,11 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
               <div className="pt-0.5 flex gap-1.5">
                 <button
                   type="button"
-                  disabled={isPageTurning}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleFlipPrev();
                   }}
-                  className="btn-lift flex items-center justify-center gap-1 px-3 py-3 sm:py-3.5 rounded-xl font-sans font-medium text-xs border border-cream-300 bg-[#FAF8F4] text-charcoal-600 md:hidden disabled:pointer-events-none disabled:opacity-75"
+                  className="btn-lift flex items-center justify-center gap-1 px-3 py-3 sm:py-3.5 rounded-xl font-sans font-medium text-xs border border-cream-300 bg-[#FAF8F4] text-charcoal-600 md:hidden active:scale-95 cursor-pointer"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   表紙へ
@@ -677,12 +670,11 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
 
                 <button
                   type="button"
-                  disabled={isPageTurning}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleFlipNext();
                   }}
-                  className="btn-lift flex-1 flex items-center justify-center gap-2 py-3 sm:py-3.5 rounded-xl font-sans font-medium text-xs text-cream-50 bg-[#1C1917] shadow-premium active:scale-95 disabled:pointer-events-none disabled:opacity-75"
+                  className="btn-lift flex-1 flex items-center justify-center gap-2 py-3 sm:py-3.5 rounded-xl font-sans font-medium text-xs text-cream-50 bg-[#1C1917] shadow-premium active:scale-95 cursor-pointer"
                 >
                   <span>お菓子を選ぶ</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -756,12 +748,11 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
               <div className="pt-0.5 md:hidden flex gap-1.5">
                 <button
                   type="button"
-                  disabled={isPageTurning}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleFlipPrev();
                   }}
-                  className="btn-lift flex items-center justify-center gap-1 px-3 py-2.5 rounded-xl font-sans font-medium text-xs border border-cream-300 bg-[#FAF8F4] text-charcoal-600 disabled:pointer-events-none disabled:opacity-75"
+                  className="btn-lift flex items-center justify-center gap-1 px-3 py-2.5 rounded-xl font-sans font-medium text-xs border border-cream-300 bg-[#FAF8F4] text-charcoal-600 active:scale-95 cursor-pointer"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   戻る
@@ -769,12 +760,11 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
 
                 <button
                   type="button"
-                  disabled={isPageTurning}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleFlipNext();
                   }}
-                  className="btn-lift flex-1 py-2.5 rounded-xl font-sans font-medium text-xs text-cream-50 bg-[#1C1917] shadow-premium flex items-center justify-center gap-1.5 active:scale-95 disabled:pointer-events-none disabled:opacity-75"
+                  className="btn-lift flex-1 py-2.5 rounded-xl font-sans font-medium text-xs text-cream-50 bg-[#1C1917] shadow-premium flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
                 >
                   <span>次へ：飲み物を選ぶ</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -901,12 +891,11 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
               <div className="pt-1 flex gap-1.5 sm:gap-2">
                 <button
                   type="button"
-                  disabled={isPageTurning}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleFlipPrev();
                   }}
-                  className="btn-lift flex items-center justify-center gap-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-sans font-medium text-xs border border-cream-300 bg-[#FAF8F4] text-charcoal-600 disabled:pointer-events-none disabled:opacity-75"
+                  className="btn-lift flex items-center justify-center gap-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-sans font-medium text-xs border border-cream-300 bg-[#FAF8F4] text-charcoal-600 active:scale-95 cursor-pointer"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   戻る
@@ -918,8 +907,8 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                     e.stopPropagation();
                     handleDiagnose();
                   }}
-                  disabled={isLoading || isPageTurning}
-                  className="btn-lift flex-1 flex items-center justify-center gap-1.5 py-2 sm:py-2.5 rounded-xl font-sans font-medium text-xs text-cream-50 bg-[#1C1917] shadow-premium disabled:opacity-85 transition-all active:scale-95 disabled:pointer-events-none"
+                  disabled={isLoading}
+                  className="btn-lift flex-1 flex items-center justify-center gap-1.5 py-2 sm:py-2.5 rounded-xl font-sans font-medium text-xs text-cream-50 bg-[#1C1917] shadow-premium disabled:opacity-85 transition-all active:scale-95 cursor-pointer"
                 >
                   {isLoading ? (
                     <div className="flex items-center gap-1.5">
@@ -1018,12 +1007,11 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                 <div className="pt-1 md:hidden flex gap-1.5">
                   <button
                     type="button"
-                    disabled={isPageTurning}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleFlipPrev();
                     }}
-                    className="btn-lift flex items-center justify-center gap-1 px-3 py-2.5 rounded-xl font-sans font-medium text-xs border border-cream-300 bg-[#FAF8F4] text-charcoal-600 disabled:pointer-events-none disabled:opacity-75"
+                    className="btn-lift flex items-center justify-center gap-1 px-3 py-2.5 rounded-xl font-sans font-medium text-xs border border-cream-300 bg-[#FAF8F4] text-charcoal-600 active:scale-95 cursor-pointer"
                   >
                     <ArrowLeft className="w-3.5 h-3.5" />
                     戻る
@@ -1031,12 +1019,11 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
 
                   <button
                     type="button"
-                    disabled={isPageTurning}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleFlipNext();
                     }}
-                    className="btn-lift flex-1 py-2.5 rounded-xl font-sans font-medium text-xs text-cream-50 bg-[#1C1917] shadow-premium flex items-center justify-center gap-1.5 active:scale-95 disabled:pointer-events-none disabled:opacity-75"
+                    className="btn-lift flex-1 py-2.5 rounded-xl font-sans font-medium text-xs text-cream-50 bg-[#1C1917] shadow-premium flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
                   >
                     <span>次へ：嗜み方と保存</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -1132,8 +1119,8 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                       e.stopPropagation();
                       handleOpenImageSaveModal();
                     }}
-                    disabled={isSharing || isPageTurning}
-                    className="btn-lift flex-1 flex items-center justify-center gap-1 py-2.5 sm:py-3 rounded-xl border border-cream-300 bg-[#FAF8F4] text-[11px] sm:text-xs font-medium text-charcoal-800 shadow-premium disabled:opacity-75 active:scale-95 disabled:pointer-events-none"
+                    disabled={isSharing}
+                    className="btn-lift flex-1 flex items-center justify-center gap-1 py-2.5 sm:py-3 rounded-xl border border-cream-300 bg-[#FAF8F4] text-[11px] sm:text-xs font-medium text-charcoal-800 shadow-premium disabled:opacity-75 active:scale-95 cursor-pointer"
                   >
                     {isSharing ? (
                       <div className="flex items-center gap-1">
@@ -1150,12 +1137,11 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
 
                   <button
                     type="button"
-                    disabled={isPageTurning}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleResetToFirst();
                     }}
-                    className="btn-lift flex items-center justify-center gap-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-[#1C1917] text-cream-50 text-[11px] sm:text-xs font-medium shadow-premium active:scale-95 disabled:pointer-events-none disabled:opacity-75"
+                    className="btn-lift flex items-center justify-center gap-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-[#1C1917] text-cream-50 text-[11px] sm:text-xs font-medium shadow-premium active:scale-95 cursor-pointer"
                   >
                     <RotateCcw className="w-3 h-3" />
                     <span>最初へ</span>
