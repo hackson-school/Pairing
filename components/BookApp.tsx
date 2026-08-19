@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useEffect, forwardRef } from "react";
 import HTMLFlipBook from "react-pageflip";
-import { ArrowRight, ArrowLeft, RotateCcw, Check, Bookmark, Coffee, Download, Share2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, RotateCcw, Check, Bookmark, Coffee, Download, Share2, X } from "lucide-react";
 import { DrinkCategory, PairingResult } from "@/types/pairing";
 import { getPairingDiagnosis } from "@/lib/pairingService";
 
