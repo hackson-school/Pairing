@@ -142,12 +142,9 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
 
   const handleFlipNext = () => {
     try {
-      const pf = bookRef.current?.pageFlip();
-      if (!pf) return;
-      try {
-        pf.flipNext("bottom");
-      } catch {
-        pf.turnToNextPage();
+      const pageFlip = bookRef.current?.pageFlip?.();
+      if (pageFlip) {
+        pageFlip.flipNext();
       }
     } catch (e) {
       console.error("handleFlipNext error:", e);
@@ -156,12 +153,9 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
 
   const handleFlipPrev = () => {
     try {
-      const pf = bookRef.current?.pageFlip();
-      if (!pf) return;
-      try {
-        pf.flipPrev("bottom");
-      } catch {
-        pf.turnToPrevPage();
+      const pageFlip = bookRef.current?.pageFlip?.();
+      if (pageFlip) {
+        pageFlip.flipPrev();
       }
     } catch (e) {
       console.error("handleFlipPrev error:", e);
@@ -752,16 +746,6 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
           ========================================================= */}
           <BookPage pageNumber={4} side="right">
             <div className="h-full flex flex-col justify-between space-y-1.5 relative">
-              {/* 鑑定前はページの右端・右下をタップ/ドラッグしても勝手にめくられないようガード */}
-              {!result && (
-                <div
-                  onClick={(e) => e.stopPropagation()}
-                  onTouchStart={(e) => e.stopPropagation()}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  className="absolute top-0 bottom-0 right-0 w-8 z-30 pointer-events-auto"
-                />
-              )}
-
               <div>
                 <span className="font-sans text-[8px] sm:text-[9.5px] font-semibold text-charcoal-400 uppercase tracking-widest block mb-0.5">
                   Chapter II · Beverage Direction
