@@ -495,7 +495,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
           お菓子と飲み物の手帖
         </h1>
         <p className="font-sans text-xs text-charcoal-400 mt-1">
-          ページの端をドラッグして、ペラペラとめくりながらお楽しみください
+          手帖のボタンを押して、ページをめくりながらお楽しみください
         </p>
       </div>
 
@@ -518,7 +518,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
           maxShadowOpacity={0.4}
           showCover={false}
           mobileScrollSupport={true}
-          className="shadow-[0_20px_50px_-15px_rgba(0,0,0,0.25)] rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing"
+          className="shadow-[0_20px_50px_-15px_rgba(0,0,0,0.25)] rounded-2xl overflow-hidden"
           style={{}}
           startPage={0}
           drawShadow={true}
@@ -527,8 +527,8 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
           startZIndex={0}
           autoSize={true}
           clickEventForward={false}
-          useMouseEvents={true}
-          swipeDistance={20}
+          useMouseEvents={false}
+          swipeDistance={30}
           showPageCorners={false}
           disableFlipByClick={true}
           onFlip={(e: any) => {
