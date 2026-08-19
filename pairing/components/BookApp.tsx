@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useEffect, forwardRef } from "react";
 import HTMLFlipBook from "react-pageflip";
-import { Camera, X, ArrowRight, ArrowLeft, RotateCcw, Check, Bookmark, Coffee, Download, Share2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, RotateCcw, Check, Bookmark, Coffee, Download, Share2 } from "lucide-react";
 import { DrinkCategory, PairingResult } from "@/types/pairing";
 import { getPairingDiagnosis } from "@/lib/pairingService";
 
@@ -95,7 +95,6 @@ interface BookAppProps {
 
 export default function BookApp({ onResetToCover }: BookAppProps) {
   const bookRef = useRef<any>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const shareCardRef = useRef<HTMLDivElement>(null);
 
   const [windowSize, setWindowSize] = useState<{ width: number; height: number }>({
@@ -103,7 +102,6 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
     height: typeof window !== "undefined" ? window.innerHeight : 768,
   });
   const [sweetsName, setSweetsName] = useState<string>("");
-  const [image, setImage] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<DrinkCategory>("all");
   const [selectedFocus, setSelectedFocus] = useState<string>("harmony");
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -136,18 +134,6 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
   const isMobile = windowSize.width < 768;
   const bookWidth = isMobile ? Math.min(windowSize.width - 16, 400) : 430;
   const bookHeight = isMobile ? Math.min(windowSize.height - 20, 600) : Math.min(windowSize.height - 80, 590);
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result as string);
-        if (!sweetsName) setSweetsName("写真のお菓子");
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   // 1ページめくる所要時間（600ms）＋ タップ判定が完全に消えるまでの安全余裕（300ms）＝ 900ms
   const FLIP_LOCK_DURATION = 900;
@@ -200,14 +186,14 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
   };
 
   const handleDiagnose = async () => {
-    if (!sweetsName && !image) {
-      alert("お菓子を選択するか、写真または名前を入力してください。");
+    if (!sweetsName) {
+      alert("お菓子を選択するか、名前を入力してください。");
       return;
     }
     setIsLoading(true);
     try {
       const res = await getPairingDiagnosis(
-        { name: sweetsName || "お菓子", image },
+        { name: sweetsName },
         selectedCategory
       );
       setResult(res);
@@ -230,7 +216,6 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
 
   const handleResetToFirst = () => {
     setResult(null);
-    setImage(null);
     setSweetsName("");
     setSelectedCategory("all");
     if (onResetToCover) {
@@ -501,8 +486,6 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
 
   return (
     <div className="h-dvh w-full flex flex-col items-center justify-center p-2 sm:p-8 select-none bg-[#F0EEE9] overflow-hidden">
-      <input type="file" ref={fileInputRef} onChange={handleFileSelect} accept="image/*" className="hidden" />
-
       {/* ヘッダー（PCのみ表示） */}
       <div className="text-center mb-4 px-2 hidden md:block">
         <span className="font-sans text-[10px] font-semibold text-charcoal-400 uppercase tracking-widest block mb-1">
@@ -695,39 +678,16 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                   今日のお菓子を記す
                 </h2>
                 <p className="font-sans text-[9px] sm:text-[11px] text-charcoal-400">
-                  写真・定番目録・手入力から選んでください
+                  定番目録または自由入力から選んでください
                 </p>
               </div>
 
-              {/* 写真ゾーン */}
-              {image ? (
-                <div className="relative rounded-xl overflow-hidden p-1.5 flex items-center justify-center bg-[#F5F2EB] border border-[#E8E2D9]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={image} alt="プレビュー" className="max-h-16 sm:max-h-20 w-auto rounded-lg object-contain" />
-                  <button
-                    type="button"
-                    onClick={() => setImage(null)}
-                    className="absolute top-1.5 right-1.5 w-5 h-5 flex items-center justify-center rounded-full bg-charcoal-900/80 text-cream-100"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ) : (
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  className="rounded-xl p-2 flex flex-col items-center justify-center gap-0.5 cursor-pointer border border-dashed border-[#D3C9BD] hover:border-[#948B82] bg-[#FAF8F4] hover:bg-[#F5F2EB] transition-all"
-                >
-                  <Camera className="w-3.5 h-3.5 text-charcoal-400" />
-                  <p className="font-sans text-[9px] sm:text-[10.5px] font-medium text-charcoal-800">お菓子の写真を貼る（カメラ／アルバム）</p>
-                </div>
-              )}
-
               {/* 定番お菓子目録（8種全表示） */}
-              <div className="space-y-1">
+              <div className="space-y-1.5 flex-1 flex flex-col justify-center">
                 <span className="font-sans text-[8px] sm:text-[9px] font-semibold text-charcoal-400 uppercase tracking-wider block">
                   定番の目録から選ぶ
                 </span>
-                <div className="grid grid-cols-2 gap-1 sm:gap-1.5">
+                <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                   {SWEETS_PRESETS.map((item) => {
                     const isSelected = sweetsName === item.name;
                     return (
@@ -735,17 +695,17 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                         key={item.name}
                         type="button"
                         onClick={() => setSweetsName(isSelected ? "" : item.name)}
-                        className={`p-1.5 rounded-xl text-left transition-all text-xs ${
+                        className={`p-2 rounded-xl text-left transition-all text-xs ${
                           isSelected
-                            ? "bg-[#1C1917] text-[#FAF8F4] border border-[#1C1917]"
+                            ? "bg-[#1C1917] text-[#FAF8F4] border border-[#1C1917] shadow-sm"
                             : "bg-[#FAF8F4] hover:bg-[#F5F2EB] text-[#1C1917] border border-[#E8E2D9]"
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-[7.5px] text-[#948B82] block">{item.category}</span>
-                          <span className="text-[7px] text-[#8C532B] opacity-80">{item.texture}</span>
+                          <span className="text-[8px] text-[#948B82] block">{item.category}</span>
+                          <span className="text-[7.5px] text-[#8C532B] opacity-80">{item.texture}</span>
                         </div>
-                        <p className="font-semibold text-[9.5px] sm:text-[11px] truncate mt-0.5">{item.name}</p>
+                        <p className="font-semibold text-[10.5px] sm:text-xs truncate mt-0.5">{item.name}</p>
                       </button>
                     );
                   })}
@@ -753,13 +713,16 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
               </div>
 
               {/* 手入力 */}
-              <div>
+              <div className="space-y-1">
+                <span className="font-sans text-[8px] sm:text-[9px] font-semibold text-charcoal-400 uppercase tracking-wider block">
+                  または自由に入力
+                </span>
                 <input
                   type="text"
                   value={sweetsName}
                   onChange={(e) => setSweetsName(e.target.value)}
-                  placeholder="または自由にお菓子名を入力（例: モンブラン）..."
-                  className="input-editorial text-[10.5px] sm:text-xs py-1.5 sm:py-2"
+                  placeholder="お菓子名を入力（例: モンブラン、レモンタルト）..."
+                  className="input-editorial text-[10.5px] sm:text-xs py-2 sm:py-2.5"
                 />
               </div>
 
