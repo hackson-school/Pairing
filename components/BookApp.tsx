@@ -149,10 +149,13 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
     }
   };
 
+  // 1ページめくる所要時間（600ms）＋ タップ判定が完全に消えるまでの安全余裕（300ms）＝ 900ms
+  const FLIP_LOCK_DURATION = 900;
+
   const handleFlipNext = () => {
     const now = Date.now();
-    // 連続タップ・次のページのボタンへのタップ貫通（ゴーストクリック）を完全に遮断
-    if (isPageTurning || now - lastFlipTimeRef.current < 650) return;
+    // ページをめくっている最中はボタン操作を100%遮断
+    if (isPageTurning || now - lastFlipTimeRef.current < FLIP_LOCK_DURATION) return;
     lastFlipTimeRef.current = now;
     setIsPageTurning(true);
 
@@ -170,12 +173,12 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
 
     setTimeout(() => {
       setIsPageTurning(false);
-    }, 650);
+    }, FLIP_LOCK_DURATION);
   };
 
   const handleFlipPrev = () => {
     const now = Date.now();
-    if (isPageTurning || now - lastFlipTimeRef.current < 650) return;
+    if (isPageTurning || now - lastFlipTimeRef.current < FLIP_LOCK_DURATION) return;
     lastFlipTimeRef.current = now;
     setIsPageTurning(true);
 
@@ -193,7 +196,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
 
     setTimeout(() => {
       setIsPageTurning(false);
-    }, 650);
+    }, FLIP_LOCK_DURATION);
   };
 
   const handleDiagnose = async () => {
@@ -514,7 +517,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
       </div>
 
       {/* 本のコンテナ */}
-      <div className="relative w-full max-w-[940px] flex justify-center perspective-[2000px] overflow-visible">
+      <div className={`relative w-full max-w-[940px] flex justify-center perspective-[2000px] overflow-visible ${isPageTurning ? "pointer-events-none select-none" : ""}`}>
         {/* 中央の背表紙シャドウ（PC見開き時のみ表示） */}
         <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-6 bg-gradient-to-r from-transparent via-black/[0.08] to-transparent pointer-events-none z-20 hidden md:block" />
 
@@ -546,7 +549,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
           showPageCorners={false}
           disableFlipByClick={true}
           onFlip={() => {
-            setTimeout(() => setIsPageTurning(false), 100);
+            setTimeout(() => setIsPageTurning(false), 200);
           }}
         >
           {/* =========================================================
