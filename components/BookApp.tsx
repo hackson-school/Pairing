@@ -142,15 +142,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
     try {
       const pf = bookRef.current?.pageFlip();
       if (!pf) return;
-      if (typeof pf.turnToNextPage === "function") {
-        pf.turnToNextPage();
-      } else if (typeof pf.flipNext === "function") {
-        pf.flipNext();
-      } else {
-        const step = isMobile ? 1 : 2;
-        const current = pf.getCurrentPageIndex() || 0;
-        pf.turnToPage(current + step);
-      }
+      pf.flipNext();
     } catch (e) {
       console.error("handleFlipNext error:", e);
       try {
@@ -165,17 +157,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
     try {
       const pf = bookRef.current?.pageFlip();
       if (!pf) return;
-      if (typeof pf.turnToPrevPage === "function") {
-        pf.turnToPrevPage();
-      } else if (typeof pf.flipPrev === "function") {
-        pf.flipPrev();
-      } else {
-        const step = isMobile ? 1 : 2;
-        const current = pf.getCurrentPageIndex() || 0;
-        if (current > 0) {
-          pf.turnToPage(Math.max(0, current - step));
-        }
-      }
+      pf.flipPrev();
     } catch (e) {
       console.error("handleFlipPrev error:", e);
       try {
@@ -203,15 +185,9 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
       setTimeout(() => {
         try {
           const pf = bookRef.current?.pageFlip();
-          if (typeof pf?.turnToNextPage === "function") {
-            pf.turnToNextPage();
-          } else if (typeof pf?.flipNext === "function") {
-            pf.flipNext();
-          } else {
-            pf?.turnToPage(4);
-          }
+          pf?.flipNext();
         } catch (e) {
-          bookRef.current?.pageFlip()?.turnToPage(4);
+          bookRef.current?.pageFlip()?.turnToNextPage();
         }
       }, 150);
     } catch (e) {
@@ -534,8 +510,8 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
           startZIndex={0}
           autoSize={true}
           clickEventForward={false}
-          useMouseEvents={false}
-          swipeDistance={30}
+          useMouseEvents={true}
+          swipeDistance={500}
           showPageCorners={false}
           disableFlipByClick={true}
           onFlip={(e: any) => {
