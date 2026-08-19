@@ -146,7 +146,11 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
       if (!pageFlip) return;
       const current = pageFlip.getCurrentPageIndex() ?? 0;
       const step = isMobile ? 1 : 2;
-      pageFlip.turnToPage(current + step);
+      try {
+        pageFlip.flip(current + step, "bottom");
+      } catch {
+        pageFlip.turnToPage(current + step);
+      }
     } catch (e) {
       console.error("handleFlipNext error:", e);
     }
@@ -159,7 +163,11 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
       const current = pageFlip.getCurrentPageIndex() ?? 0;
       const step = isMobile ? 1 : 2;
       if (current > 0) {
-        pageFlip.turnToPage(Math.max(0, current - step));
+        try {
+          pageFlip.flip(Math.max(0, current - step), "bottom");
+        } catch {
+          pageFlip.turnToPage(Math.max(0, current - step));
+        }
       }
     } catch (e) {
       console.error("handleFlipPrev error:", e);
@@ -509,7 +517,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
           autoSize={true}
           clickEventForward={false}
           useMouseEvents={true}
-          swipeDistance={500}
+          swipeDistance={9999}
           showPageCorners={false}
           disableFlipByClick={true}
           onFlip={(e: any) => {
