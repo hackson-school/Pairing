@@ -144,14 +144,13 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
     try {
       const pf = bookRef.current?.pageFlip();
       if (!pf) return;
-      pf.flipNext();
+      try {
+        pf.flipNext("bottom");
+      } catch {
+        pf.turnToNextPage();
+      }
     } catch (e) {
       console.error("handleFlipNext error:", e);
-      try {
-        bookRef.current?.pageFlip()?.turnToNextPage();
-      } catch (err) {
-        console.error(err);
-      }
     }
   };
 
@@ -159,14 +158,13 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
     try {
       const pf = bookRef.current?.pageFlip();
       if (!pf) return;
-      pf.flipPrev();
+      try {
+        pf.flipPrev("bottom");
+      } catch {
+        pf.turnToPrevPage();
+      }
     } catch (e) {
       console.error("handleFlipPrev error:", e);
-      try {
-        bookRef.current?.pageFlip()?.turnToPrevPage();
-      } catch (err) {
-        console.error(err);
-      }
     }
   };
 
