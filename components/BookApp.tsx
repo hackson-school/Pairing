@@ -627,26 +627,14 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                 </p>
               </div>
 
-              <div className="pt-0.5 flex gap-1.5">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleFlipPrev();
-                  }}
-                  className="btn-lift flex items-center justify-center gap-1 px-3 py-3 sm:py-3.5 rounded-xl font-sans font-medium text-xs border border-cream-300 bg-[#FAF8F4] text-charcoal-600 md:hidden active:scale-95 cursor-pointer"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  表紙へ
-                </button>
-
+              <div className="pt-0.5 flex">
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleFlipNext();
                   }}
-                  className="btn-lift flex-1 flex items-center justify-center gap-2 py-3 sm:py-3.5 rounded-xl font-sans font-medium text-xs text-cream-50 bg-[#1C1917] shadow-premium active:scale-95 cursor-pointer"
+                  className="btn-lift w-full flex items-center justify-center gap-2 py-3 sm:py-3.5 rounded-xl font-sans font-medium text-xs text-cream-50 bg-[#1C1917] shadow-premium active:scale-95 cursor-pointer"
                 >
                   <span>お菓子を選ぶ</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -716,27 +704,15 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                 />
               </div>
 
-              {/* モバイル用操作ボタン */}
-              <div className="pt-0.5 md:hidden flex gap-1.5">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleFlipPrev();
-                  }}
-                  className="btn-lift flex items-center justify-center gap-1 px-3 py-2.5 rounded-xl font-sans font-medium text-xs border border-cream-300 bg-[#FAF8F4] text-charcoal-600 active:scale-95 cursor-pointer"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  戻る
-                </button>
-
+              {/* モバイル用次へボタン（スマホ単ページ時のみ表示） */}
+              <div className="pt-0.5 md:hidden flex">
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleFlipNext();
                   }}
-                  className="btn-lift flex-1 py-2.5 rounded-xl font-sans font-medium text-xs text-cream-50 bg-[#1C1917] shadow-premium flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
+                  className="btn-lift w-full py-2.5 rounded-xl font-sans font-medium text-xs text-cream-50 bg-[#1C1917] shadow-premium flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
                 >
                   <span>次へ：飲み物を選ぶ</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -789,7 +765,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                 </div>
               </div>
 
-              {/* ジャンル一覧（2列グリッドで劇的省スペース＆見切れ解消） */}
+              {/* ジャンル一覧 */}
               <div className="space-y-1">
                 <span className="font-sans text-[7.5px] sm:text-[8.5px] font-bold text-[#8C532B] uppercase tracking-wider block">
                   飲み物のジャンル指定
@@ -849,15 +825,16 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
                 </div>
               </div>
 
-              {/* 鑑定ボタン */}
+              {/* 鑑定ボタン（スマホ時のみ戻るボタンを横に配置） */}
               <div className="pt-1 flex gap-1.5 sm:gap-2">
+                {/* スマホ時のみ：Page 3（お菓子選び）へ戻るボタン */}
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleFlipPrev();
                   }}
-                  className="btn-lift flex items-center justify-center gap-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-sans font-medium text-xs border border-cream-300 bg-[#FAF8F4] text-charcoal-600 active:scale-95 cursor-pointer"
+                  className="btn-lift flex items-center justify-center gap-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-sans font-medium text-xs border border-cream-300 bg-[#FAF8F4] text-charcoal-600 md:hidden active:scale-95 cursor-pointer"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   戻る
@@ -889,7 +866,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
           </BookPage>
 
           {/* =========================================================
-              見開き 3：【Page 5】Chapter III ペアリング主鑑（隙間なし）
+              見開き 3：【Page 5】Chapter III ペアリング主鑑
           ========================================================= */}
           <BookPage pageNumber={5} side="left">
             {result ? (
@@ -1003,7 +980,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
           </BookPage>
 
           {/* =========================================================
-              見開き 3：【Page 6】Chapter IV 嗜み方 ＆ 他の候補 ＆ アクション（隙間なし）
+              見開き 3：【Page 6】Chapter IV 嗜み方 ＆ 他の候補 ＆ アクション
           ========================================================= */}
           <BookPage pageNumber={6} side="right">
             {result ? (
@@ -1075,6 +1052,19 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
 
                 {/* 下部アクションボタン */}
                 <div className="flex gap-1.5 pt-1">
+                  {/* スマホ時のみ：Page 5（診断主鑑）へ戻るボタン */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleFlipPrev();
+                    }}
+                    className="btn-lift flex items-center justify-center gap-1 px-3 py-2.5 sm:py-3 rounded-xl border border-cream-300 bg-[#FAF8F4] text-[11px] sm:text-xs font-medium text-charcoal-700 shadow-premium md:hidden active:scale-95 cursor-pointer"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    戻る
+                  </button>
+
                   <button
                     type="button"
                     onClick={(e) => {
