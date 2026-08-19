@@ -163,11 +163,7 @@ export default function BookApp({ onResetToCover }: BookAppProps) {
       const current = pageFlip.getCurrentPageIndex() ?? 0;
       const step = isMobile ? 1 : 2;
       if (current > 0) {
-        try {
-          pageFlip.flip(Math.max(0, current - step), "bottom");
-        } catch {
-          pageFlip.turnToPage(Math.max(0, current - step));
-        }
+        pageFlip.turnToPage(Math.max(0, current - step));
       }
     } catch (e) {
       console.error("handleFlipPrev error:", e);
