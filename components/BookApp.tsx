@@ -41,13 +41,15 @@ const BookPage = forwardRef<
     pageNumber?: number;
     side?: "left" | "right";
     isCoverStyle?: boolean;
+    density?: "hard" | "soft";
   }
->(({ children, className = "", pageNumber, side = "left", isCoverStyle = false }, ref) => {
+>(({ children, className = "", pageNumber, side = "left", isCoverStyle = false, density = "soft" }, ref) => {
   const isLeft = side === "left";
   return (
     <div
       ref={ref}
-      className={`w-full h-full p-3.5 sm:p-5 flex flex-col justify-between select-none relative ${
+      data-density={density}
+      className={`page w-full h-full p-3.5 sm:p-5 flex flex-col justify-between select-none relative ${
         isCoverStyle ? "text-[#FAF8F4]" : "bg-[#FAF8F4] text-[#1C1917]"
       } ${className}`}
       style={{
